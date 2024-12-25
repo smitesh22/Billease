@@ -19,6 +19,24 @@ const router = createRouter({
             component: () => import("../views/Login/Login.vue")
         },
         {
+            path: "/app",
+            name: "App",
+            component: () => import("../views/App.vue"),
+            beforeEnter: (to, from, next) => {
+                const token = localStorage.getItem('authToken');
+                if (token) {
+                    next();
+                } else {
+                    next('/login');
+                }
+            }
+        },
+        {
+            path: "/verify",
+            name: "verify",
+            component: () => import("../views/Login/Verify.vue")
+        },
+        {
             path: "/hello-world",
             name: "Hello World",
             component: () => import("../components/HelloWorld.vue"),

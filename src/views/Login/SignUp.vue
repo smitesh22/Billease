@@ -21,8 +21,24 @@
             v-model="email"
             class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
         />
-        <p v-if="!isEmailValid" class="text-red-500 text-sm mt-1" aria-live="polite">
-          Invalid email address.
+        <label for="firstname" class="block text-sm font-medium text-gray-700">First Name*</label>
+        <input
+            id="firstname"
+            type="text"
+            placeholder="First Name"
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+            v-model="firstName"
+        />
+        <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
+        <input
+            id="lastname"
+            type="text"
+            placeholder="Last Name"
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+            v-model="lastName"
+        />
+        <p v-if="showWarning" class="text-red-500 text-sm mt-1" aria-live="polite">
+          {{ warning }}
         </p>
       </div>
 
@@ -69,6 +85,9 @@
       </div>
 
       <!-- Continue Button -->
+      <p v-if="showLoginWarning" class="text-red-500 text-sm mt-1" aria-live="polite">
+        {{ warning }}
+      </p>
       <button
           class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300  font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
           @click="validateUserData"
@@ -120,12 +139,23 @@
 
 <script setup>
 import {ref, computed} from "vue";
+import api from "../../api/index.ts";
+import {useRouter} from "vue-router";
 
+const router = useRouter();
 const email = ref("");
 const password = ref("");
+const firstName = ref('')
+const lastName = ref('')
 const buttonValue = ref("Continue");
+
+const warning = ref("");
+const showLoginWarning = ref(false);
+const showWarning = ref(false);
 const isEmailValid = ref(true);
-let isPasswordValid = ref(false);
+const isPasswordValid = computed(() => {
+  return isLowercase.value && isUppercase.value && isDigit.value && isSpecialChar.value && isLengthValid.value;
+});
 const showPassword = ref(false);
 
 const isLowercase = computed(() => /[a-z]/.test(password.value));
@@ -134,28 +164,54 @@ const isDigit = computed(() => /\d/.test(password.value));
 const isSpecialChar = computed(() => /[!@#$%^&*(),.?":{}|<>]/.test(password.value));
 const isLengthValid = computed(() => password.value.length >= 8);
 
-isPasswordValid = computed(() => {
-  return isLowercase.value && isUppercase.value && isDigit.value && isSpecialChar.value && isLengthValid.value;
-});
+const validateUserData = async () => {
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
+  const isValidFirstName = firstName.value && firstName.value.length > 0;
 
-const validateUserData = () => {
-  if (buttonValue.value === "Continue") {
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
+  isEmailValid.value = isValidEmail;
+  showPassword.value = isValidEmail && isValidFirstName;
 
-    isEmailValid.value = isValidEmail;
-    showPassword.value = isValidEmail;
-
-    if (isValidEmail) {
-      buttonValue.value = "Get Code";
-    }
+  if (isValidEmail && isValidFirstName) {
+    showWarning.value = false;
+    buttonValue.value = "Get Code";
   } else {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-    isPasswordValid.value = passwordRegex.test(password.value);
+    showWarning.value = true;
+    if (!isValidEmail) {
+      warning.value = "Please enter a valid email address";
+    } else {
+      warning.value = "First name is required";
+    }
   }
 
-  console.log(email.value);
-  console.log(password.value);
+  if (buttonValue.value === "Get Code" && isValidEmail && isValidFirstName && isPasswordValid.value) {
+    try {
+      const response = await api.post("/register", {
+        email: email.value,
+        firstName: firstName.value,
+        lastName: lastName.value,
+        password: password.value,
+      });
+
+      await router.push({
+        path: '/verify',
+        query: {id: response.data.id},
+      })
+
+
+    } catch (error) {
+      if (error.response && error.response.data) {
+        // Access error message only if response and data are available
+        warning.value = error.response.data.message;
+        showLoginWarning.value = true;
+      } else {
+        // Handle other types of errors (e.g., network errors)
+        warning.value = "An unexpected error occurred. Please try again.";
+        showLoginWarning.value = true;
+      }
+    }
+  }
 };
+
 </script>
 
 <style scoped>

@@ -5,7 +5,7 @@
       <div class="text-lg font-bold" @click="goToHomePage">Logo</div>
       <div class="flex items-center space-x-4">
         <div class="text-gray-500">More Options</div>
-        <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded text-gray-800">Log In</button>
+        <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded text-gray-800" @click="goToLogIn">Log In</button>
         <button class="bg-purple-600 text-white px-4 py-2 rounded" @click="goToSignUp">Sign Up</button>
       </div>
     </header>
@@ -48,6 +48,10 @@ const goToHomePage = () => {
 }
 const goToSignUp = () => {
   router.push("/signup")
+}
+
+const goToLogIn = () => {
+  router.push("/login")
 }
 // You can add any additional setup if required
 </script>
