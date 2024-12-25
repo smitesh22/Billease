@@ -15,12 +15,27 @@
         />
       </div>
 
+      <p v-if="showWarning" class="text-red-500 text-sm mt-1" aria-live="polite">
+        {{ warning }}</p>
+
+      <p v-if="showMessage" class="text-green-500 text-sm mt-1" aria-live="polite">
+        {{ message }}</p>
+
+      <div class="mb-4">
       <button
           class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
           @click="handleSubmit"
       >
         Verify Email
       </button>
+      </div>
+      <button
+          class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
+          @click="resendCode"
+      >
+        Resend Code
+      </button>
+
     </div>
   </div>
 </template>
@@ -32,6 +47,11 @@ import api from "../../api";
 
 const code = ref("");
 const userEmail = ref<string | null>(null);
+
+const showWarning = ref(false);
+const showMessage = ref(false);
+const message = ref("");
+const warning = ref("");
 
 const route = useRoute();
 const router = useRouter();
@@ -51,7 +71,7 @@ const handleSubmit = async () => {
   }
 
   try {
-    await api.post("verify-user", {
+    const response = await api.post("verify-user", {
       email: userEmail.value,
       code: code.value
     });
@@ -63,6 +83,24 @@ const handleSubmit = async () => {
 
   } catch (error) {
     console.error(error);
+    showWarning.value = true;
+    warning.value = error.response.data.message;
   }
 };
+
+const resendCode = async () => {
+  try{
+    const response = await api.post("resend-token", {
+      email: userEmail.value,
+    });
+    if(response.status === 201){
+      showMessage.value = true;
+      message.value = response.data.message;
+    }
+
+  }catch(error: unknown){
+    showWarning.value = true;
+    showWarning.value = error;
+  }
+}
 </script>

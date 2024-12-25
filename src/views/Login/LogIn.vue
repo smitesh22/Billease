@@ -35,6 +35,11 @@
         >
           Log In
         </button>
+
+        <div class="text-center text-sm text-gray-500 mt-4">
+          Dont have an account?
+          <a href="/signup" class="text-green-600 hover:underline">Register</a>
+        </div>
         <p v-if="showWarning" class="text-red-500 text-sm mt-1" aria-live="polite">
           {{ warning }}</p>
 

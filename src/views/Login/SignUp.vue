@@ -13,6 +13,7 @@
 
       <!-- Email Input -->
       <div class="mb-4">
+        <div class="mb-4">
         <label for="email" class="block text-sm font-medium text-gray-700">Email address*</label>
         <input
             id="email"
@@ -21,6 +22,8 @@
             v-model="email"
             class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
         />
+        </div>
+        <div class="mb-4">
         <label for="firstname" class="block text-sm font-medium text-gray-700">First Name*</label>
         <input
             id="firstname"
@@ -29,6 +32,8 @@
             class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
             v-model="firstName"
         />
+        </div>
+        <div class="mb-4">
         <label for="lastname" class="block text-sm font-medium text-gray-700">Last Name</label>
         <input
             id="lastname"
@@ -37,6 +42,7 @@
             class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
             v-model="lastName"
         />
+        </div>
         <p v-if="showWarning" class="text-red-500 text-sm mt-1" aria-live="polite">
           {{ warning }}
         </p>
