@@ -43,50 +43,75 @@
       </div>
     </div>
   </div>
-
 </template>
-<script setup lang="ts">
-import {onMounted, ref} from "vue";
-import api from "../../api";
-import {useRoute, useRouter} from "vue-router";
 
-const email = ref('')
-const password = ref('')
-const showWarning = ref(false)
-const showMessage = ref(false)
-const message = ref('')
-let warning = ref('')
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import api from "../../api";
+import { useRoute, useRouter } from "vue-router";
+import { useUserStore } from "../../store/user.ts";
+import { AxiosError } from "axios";
+
+const userStore = useUserStore();
+
+const email = ref('');
+const password = ref('');
+const showWarning = ref(false);
+const showMessage = ref(false);
+const message = ref('');
+let warning = ref('');
+
 const router = useRouter();
 const route = useRoute();
 
 onMounted(() => {
-  if(route.query.message){
-    showMessage.value = true
-    message.value = route.query.message
+  if (typeof route.query.message === "string") {
+    showMessage.value = true;
+    message.value = route.query.message;
   }
-})
+
+  if (localStorage.authToken) {
+    router.push('/app');
+  }
+});
 
 const handleSubmit = async () => {
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
   if (isValidEmail) {
-    try{
+    try {
       const response = await api.post('/login', {
         email: email.value,
         password: password.value
       });
 
       localStorage.setItem("authToken", response.data.token);
-      console.log("Logged in successfully, token stored in localStorage");
+      userStore.setAuthToken(response.data.token);
 
+      // Set user data in the store
+      userStore.setUser({
+        id: response.data.id,
+        email: response.data.email,
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
+        isVerified: response.data.verified,
+      });
+
+      console.log("Logged in successfully, token stored in localStorage");
       await router.push("/app");
-    }catch(error:unknown){
+    } catch (error: unknown) {
       showWarning.value = true;
-      warning.value = "Invalid Credentials, Please try again"
+
+      if (error instanceof AxiosError && error.response?.data?.message === "User is not verified") {
+        warning.value = error.response.data.message;
+        await router.push({
+          path: '/verify',
+          query: { email: email.value },
+        });
+      }
     }
-  }else{
-    console.log(email.value)
+  } else {
     showWarning.value = true;
-    warning.value = "Invalid email address."
+    warning.value = "Invalid email address.";
   }
-}
+};
 </script>

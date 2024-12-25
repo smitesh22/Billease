@@ -31,24 +31,28 @@ import { useRoute, useRouter } from "vue-router";
 import api from "../../api";
 
 const code = ref("");
-const userId = ref<string | null>(null);
+const userEmail = ref<string | null>(null);
 
 const route = useRoute();
 const router = useRouter();
 
 onMounted(() => {
-  userId.value = route.query.id as string | null;
+  if(localStorage.authToken){
+    router.push('/app')
+  }
+
+  userEmail.value = route.query.email as string | null;
 });
 
 const handleSubmit = async () => {
-  if (!userId.value) {
-    console.error("User ID is not available.");
+  if (!userEmail.value) {
+    console.error("User Email is not available.");
     return;
   }
 
   try {
     await api.post("verify-user", {
-      id: userId.value,
+      email: userEmail.value,
       code: code.value
     });
 

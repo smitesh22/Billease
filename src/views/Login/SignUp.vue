@@ -138,7 +138,7 @@
 </template>
 
 <script setup>
-import {ref, computed} from "vue";
+import {ref, computed, onMounted} from "vue";
 import api from "../../api/index.ts";
 import {useRouter} from "vue-router";
 
@@ -164,6 +164,12 @@ const isDigit = computed(() => /\d/.test(password.value));
 const isSpecialChar = computed(() => /[!@#$%^&*(),.?":{}|<>]/.test(password.value));
 const isLengthValid = computed(() => password.value.length >= 8);
 
+
+onMounted(() => {
+  if(localStorage.authToken){
+    router.push('/app')
+  }
+})
 const validateUserData = async () => {
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
   const isValidFirstName = firstName.value && firstName.value.length > 0;
@@ -194,7 +200,7 @@ const validateUserData = async () => {
 
       await router.push({
         path: '/verify',
-        query: {id: response.data.id},
+        query: {email: email.value},
       })
 
 

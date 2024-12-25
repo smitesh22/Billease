@@ -1,4 +1,5 @@
 import {createRouter, createWebHistory} from "vue-router";
+import {useUserStore} from "../store/user.ts";
 
 const router = createRouter({
     history: createWebHistory(),
@@ -22,12 +23,12 @@ const router = createRouter({
             path: "/app",
             name: "App",
             component: () => import("../views/App.vue"),
-            beforeEnter: (to, from, next) => {
-                const token = localStorage.getItem('authToken');
-                if (token) {
-                    next();
-                } else {
-                    next('/login');
+            beforeEnter: (_to, _from, next) => {
+                const userStore = useUserStore()
+                if(userStore.isAuthenticated){
+                    next()
+                }else{
+                    next('/login')
                 }
             }
         },
