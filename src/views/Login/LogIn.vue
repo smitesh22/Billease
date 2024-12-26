@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="w-full max-w-sm bg-white shadow-md rounded-lg p-6">
-      <h2 class="text-2xl font-semibold text-center mb-4">Login</h2>
+      <h2 class="text-2xl font-semibold text-center mb-4">Welcome Back!</h2>
       <div class="mb-4">
         <label for="email" class="block text-sm font-medium text-gray-700">Email address*</label>
         <input
