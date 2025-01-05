@@ -17,6 +17,10 @@ export const useUserStore = defineStore("user", {
             localStorage.removeItem("user");
             this.clearUser();
         },
+        setIsSubscribed(subscribed: boolean) {
+            this.user.privileged = subscribed;
+            localStorage.setItem("user", JSON.stringify(this.user));
+        },
         setUser(user: User) {
             this.user = user;
             localStorage.setItem("user", JSON.stringify(user));
@@ -29,5 +33,6 @@ export const useUserStore = defineStore("user", {
     getters: {
         isAuthenticated: (state) => !!state.authToken,
         getUser: (state) => state.user,
+        isPrivileged: (state) => state.user?.privileged || false,
     },
 });

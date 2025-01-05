@@ -59,7 +59,7 @@ const router = useRouter()
 const user = useUserStore()
 onMounted(() => {
   if(user.isAuthenticated){
-    router.push("/app")
+    router.push("/dashboard")
   }
 });
 const goToHomePage = () => {

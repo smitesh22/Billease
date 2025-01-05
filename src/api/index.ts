@@ -1,7 +1,8 @@
 import axios from "axios"
+import {API_URL} from "../secrets/secrets.ts";
 
 const api = axios.create({
-    baseURL: "http://localhost:4000",
+    baseURL: API_URL,
     headers: {
         "Content-Type": "application/json"
     }

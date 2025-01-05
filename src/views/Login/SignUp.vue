@@ -43,9 +43,9 @@
             v-model="lastName"
         />
         </div>
-        <p v-if="showWarning" class="text-red-500 text-sm mt-1" aria-live="polite">
-          {{ warning }}
-        </p>
+        <div v-if="showWarning" aria-live="polite" class="p-4 mt-4 mb-4 text-sm text-yellow-800 bg-yellow-100 rounded-lg" role="alert">
+          {{warning}}
+        </div>
       </div>
 
       <div class="mb-4" v-if="showPassword">
@@ -91,9 +91,9 @@
       </div>
 
       <!-- Continue Button -->
-      <p v-if="showLoginWarning" class="text-red-500 text-sm mt-1" aria-live="polite">
-        {{ warning }}
-      </p>
+      <div v-if="showLoginWarning" aria-live="polite" class="p-4 mt-4 mb-4 text-sm text-yellow-800 bg-yellow-100 rounded-lg" role="alert">
+        {{warning}}
+      </div>
       <button
           class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300  font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
           @click="validateUserData"
@@ -173,7 +173,7 @@ const isLengthValid = computed(() => password.value.length >= 8);
 
 onMounted(() => {
   if(localStorage.authToken){
-    router.push('/app')
+    router.push('/dashboard');
   }
 })
 const validateUserData = async () => {

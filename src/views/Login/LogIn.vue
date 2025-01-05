@@ -28,6 +28,10 @@
             v-model="password"
         />
       </div>
+
+      <div class="flex justify-left">
+        <a href="/forgot-password" class="text-sm text-purple-600 mb-2 hover:underline">Forgot password?</a>
+      </div>
       <div class="mb-4">
         <button
             class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300  font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
@@ -36,15 +40,19 @@
           Log In
         </button>
 
+        <div v-if="showWarning" aria-live="polite" class="p-4 mt-4 mb-4 text-sm text-yellow-800 bg-yellow-100 rounded-lg" role="alert">
+            {{warning}}
+        </div>
+
+        <div v-if="showMessage" aria-live="polite" class="p-4 mt-4 mb-4 text-sm text-green-800 bg-green-100 rounded-lg" role="alert">
+            {{message}}
+        </div>
+
         <div class="text-center text-sm text-gray-500 mt-4">
           Dont have an account?
-          <a href="/signup" class="text-green-600 hover:underline">Register</a>
+          <a href="/signup" class="text-purple-600 hover:underline">Register</a>
         </div>
-        <p v-if="showWarning" class="text-red-500 text-sm mt-1" aria-live="polite">
-          {{ warning }}</p>
 
-        <p v-if="showMessage" class="text-green-500 text-sm mt-1" aria-live="polite">
-          {{ message }}</p>
       </div>
     </div>
   </div>
@@ -76,7 +84,7 @@ onMounted(() => {
   }
 
   if (localStorage.authToken) {
-    router.push('/app');
+    router.push('/dashboard');
   }
 });
 
@@ -84,7 +92,8 @@ const handleSubmit = async () => {
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
   if (isValidEmail) {
     try {
-      const response = await api.post('/login', {
+      console.log("Logging in...");
+      const response = await api.post('login', {
         email: email.value,
         password: password.value
       });
@@ -99,19 +108,22 @@ const handleSubmit = async () => {
         firstName: response.data.firstName,
         lastName: response.data.lastName,
         isVerified: response.data.verified,
+        privileged: response.data.privileged,
       });
 
       console.log("Logged in successfully, token stored in localStorage");
-      await router.push("/app");
+      await router.push("/dashboard");
     } catch (error: unknown) {
+      console.error("Error logging in:", error);
       showWarning.value = true;
-
       if (error instanceof AxiosError && error.response?.data?.message === "User is not verified") {
         warning.value = error.response.data.message;
         await router.push({
           path: '/verify',
           query: { email: email.value },
         });
+      }else if(error.response?.data?.message){
+        warning.value = error.response.data.message;
       }
     }
   } else {

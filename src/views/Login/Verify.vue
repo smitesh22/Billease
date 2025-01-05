@@ -15,12 +15,14 @@
         />
       </div>
 
-      <p v-if="showWarning" class="text-red-500 text-sm mt-1" aria-live="polite">
-        {{ warning }}</p>
 
-      <p v-if="showMessage" class="text-green-500 text-sm mt-1" aria-live="polite">
-        {{ message }}</p>
+      <div v-if="showWarning" aria-live="polite" class="p-4 mt-4 mb-4 text-sm text-red-800 bg-red-100 rounded-lg" role="alert">
+        {{warning}}
+      </div>
 
+      <div v-if="showMessage" aria-live="polite" class="p-4 mt-4 mb-4 text-sm text-green-800 bg-green-100 rounded-lg" role="alert">
+        {{message}}
+      </div>
       <div class="mb-4">
       <button
           class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
@@ -44,6 +46,7 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "../../api";
+import router from "../../router";
 
 const code = ref("");
 const userEmail = ref<string | null>(null);
@@ -54,11 +57,10 @@ const message = ref("");
 const warning = ref("");
 
 const route = useRoute();
-const router = useRouter();
 
 onMounted(() => {
   if(localStorage.authToken){
-    router.push('/app')
+    router.push('/dashboard')
   }
 
   userEmail.value = route.query.email as string | null;
@@ -71,7 +73,7 @@ const handleSubmit = async () => {
   }
 
   try {
-    const response = await api.post("verify-user", {
+   await api.post("verify-token", {
       email: userEmail.value,
       code: code.value
     });
