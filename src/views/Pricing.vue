@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gray-50" id="pricing">
-    <section class="container mx-auto px-6 py-16">
+  <div class="min-h-screen items-center bg-gray-50 w-full rounded-xl" id="pricing">
+    <section class="container mx-auto px-3 py-16">
       <div class="text-center mb-12">
         <h2 class="text-4xl font-extrabold text-gray-800">Affordable Pricing Plans</h2>
         <p class="text-lg text-gray-600 mt-2">Choose a plan that fits your needs perfectly.</p>

@@ -1,12 +1,12 @@
 <template>
   <div class="min-h-screen flex flex-col justify-center items-center bg-gray-50">
     <div class="mb-8">
-      <div class="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-        <span class="text-gray-500 text-sm">Logo</span>
-      </div>
+        <img src="/logo.svg" alt="Logo">
     </div>
     <div class="w-full max-w-sm bg-white shadow-md rounded-lg p-6">
       <h2 class="text-2xl font-semibold text-center mb-4">Welcome Back!</h2>
+
+      <!-- Email Input -->
       <div class="mb-4">
         <label for="email" class="block text-sm font-medium text-gray-700">Email address*</label>
         <input
@@ -18,41 +18,55 @@
         />
       </div>
 
-      <div class="mb-4">
+      <!-- Password Input with Show/Hide Toggle -->
+      <div class="mb-4 relative">
         <label for="password" class="block text-sm font-medium text-gray-700">Password*</label>
+        <div class="relative">
         <input
             id="password"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             placeholder="Password"
-            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 pr-10"
             v-model="password"
         />
+        <!-- Eye Toggle Button -->
+        <button
+            type="button"
+            class="absolute inset-y-0 right-2 flex items-center px-2"
+            @click="togglePassword"
+        ><img :src="showPassword ? hideIcon : showIcon" alt="Toggle Password" class="w-6 h-6 cursor-pointer" />
+        </button>
+        </div>
       </div>
 
+      <!-- Forgot Password -->
       <div class="flex justify-left">
         <a href="/forgot-password" class="text-sm text-purple-600 mb-2 hover:underline">Forgot password?</a>
       </div>
+
+      <!-- Login Button -->
       <div class="mb-4">
         <button
-            class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300  font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
+            class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
             @click="handleSubmit"
         >
           Log In
         </button>
 
+        <!-- Warning & Success Messages -->
         <div v-if="showWarning" aria-live="polite" class="p-4 mt-4 mb-4 text-sm text-yellow-800 bg-yellow-100 rounded-lg" role="alert">
-            {{warning}}
+          {{ warning }}
         </div>
 
         <div v-if="showMessage" aria-live="polite" class="p-4 mt-4 mb-4 text-sm text-green-800 bg-green-100 rounded-lg" role="alert">
-            {{message}}
+          {{ message }}
         </div>
 
+        <!-- Register Link -->
         <div class="text-center text-sm text-gray-500 mt-4">
-          Dont have an account?
+          Don't have an account?
           <a href="/signup" class="text-purple-600 hover:underline">Register</a>
         </div>
-
       </div>
     </div>
   </div>
@@ -66,16 +80,26 @@ import { useUserStore } from "../../store/user.ts";
 import { AxiosError } from "axios";
 
 const userStore = useUserStore();
-
 const email = ref('');
 const password = ref('');
+const showPassword = ref(false); // Toggle visibility state
+
 const showWarning = ref(false);
 const showMessage = ref(false);
 const message = ref('');
-let warning = ref('');
+const warning = ref('');
 
 const router = useRouter();
 const route = useRoute();
+
+// Define image paths (Make sure they are inside the public or assets folder)
+const showIcon = "/showPassword.svg";
+const hideIcon = "/hidePassword.svg";
+
+// Handle show/hide password toggle
+const togglePassword = () => {
+  showPassword.value = !showPassword.value;
+};
 
 onMounted(() => {
   if (typeof route.query.message === "string") {
@@ -122,7 +146,7 @@ const handleSubmit = async () => {
           path: '/verify',
           query: { email: email.value },
         });
-      }else if(error.response?.data?.message){
+      } else if (error.response?.data?.message) {
         warning.value = error.response.data.message;
       }
     }

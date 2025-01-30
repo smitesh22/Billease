@@ -1,15 +1,15 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header Section -->
-    <header class="bg-white border-b border-gray-200 py-4 px-8 flex justify-between items-center">
-      <div class="text-lg font-bold">Logo</div>
+    <header class=" bg-gray-200 py-4 px-8 flex justify-between items-center">
+      <div><img src="/logo.svg" alt="Logo" class="h-10"></div>
       <div class="flex items-center space-x-4">
         <div v-if="!privilegedUser" class="text-gray-500">
           <a href="/pricing">Pricing</a>
         </div>
         <div class="relative">
           <button
-              class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full text-gray-800"
+              class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl text-gray-800"
               @click="toggleModal"
           >
             {{ userInitials }}
@@ -33,7 +33,7 @@
       </div>
     </header>
 
-    <main class="container  mx-auto px-8 py-16 relative">
+    <main class="container mx-auto px-8 py-16 relative">
       <link
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
           rel="stylesheet"
@@ -56,15 +56,17 @@
             :class="[
             'p-4 rounded-lg max-w-sm animate__animated animate__fadeInUp',
             message.type === 'user' || message.type === 'image'
-              ? 'bg-purple-200 self-end text-right'
-              : 'bg-purple-200 self-start text-left',
+              ? 'bg-purple-200  self-end text-right'
+              : 'self-start text-left',
           ]"
         >
           <!-- If message is an image -->
           <div v-if="message.type === 'image'">
             <img :src="message.content" alt="User uploaded image" class="rounded-lg max-w-full" />
           </div>
-          <!-- If message is text -->
+          <!-- If message is a downloadable link -->
+          <div v-else-if="message.isHtml" v-html="message.content"></div>
+          <!-- If message is plain text -->
           <div v-else>{{ message.content }}</div>
         </div>
       </div>
@@ -80,7 +82,6 @@
             accept="image/*"
             id="file-upload"
             class="hidden"
-            multiple
             @change="handleFileUpload"
             :disabled="loading"
         />
@@ -92,22 +93,21 @@
           <i class="fa-solid fa-paperclip"></i>
         </label>
 
-        <!-- Attachment Preview Section -->
-        <div class="flex-grow mx-4 flex items-center space-x-4 overflow-x-auto">
+        <!-- Attachment Preview Section (Only One Image) -->
+        <div class="flex-grow mx-4 flex items-center justify-center">
           <div
-              v-for="(file, index) in uploadedImages"
-              :key="index"
+              v-if="uploadedImage"
               class="relative w-16 h-16 bg-gray-200 flex items-center justify-center shadow-md border border-gray-300 rounded-lg"
           >
             <img
-                :src="file.preview"
-                :alt="'Image ' + index"
+                :src="uploadedImage.preview"
+                alt="Selected Image"
                 class="w-full h-full object-cover rounded-lg"
             />
             <!-- Remove Button -->
             <button
                 class="absolute top-1 right-1 bg-gray-300 text-black rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-600"
-                @click="removeImage(index)"
+                @click="removeImage"
                 :disabled="loading"
             >
               <i class="fa-solid fa-xmark"></i>
@@ -119,7 +119,7 @@
         <button
             class="bg-purple-500 text-white rounded-full w-12 h-12 flex items-center justify-center transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300"
             aria-label="Send Message"
-            :disabled="uploadedImages.length === 0 || loading"
+            :disabled="!uploadedImage || loading"
             @click="sendMessage"
         >
           <i class="fa-solid fa-paper-plane"></i>
@@ -133,12 +133,13 @@
 import { ref, computed, onMounted } from "vue";
 import { useUserStore } from "../store/user";
 import { useRouter } from "vue-router";
+import api from "../api";
 
 const router = useRouter();
 const userStore = useUserStore();
 const privilegedUser = ref(false);
 const showModal = ref(false);
-const uploadedImages = ref<{ preview: string; file: File }[]>([]);
+const uploadedImage = ref<{ preview: string; file: File } | null>(null);
 const messages = ref<{ type: string; content: string }[]>([
   { type: "bot", content: "Hello! How can I help you today?" },
 ]);
@@ -168,63 +169,87 @@ const logout = () => {
 
 const handleFileUpload = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
+  if (!files || files.length === 0) return;
 
-  if (!files) return;
-  Array.from(files).forEach((file) => {
-    if (file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          uploadedImages.value.push({
-            preview: e.target.result as string,
-            file: file,
-          });
-        }
+  const file = files[0]; // Only take the first file
+  if (!file.type.startsWith("image/")) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    if (e.target?.result) {
+      uploadedImage.value = {
+        preview: e.target.result as string,
+        file: file,
       };
-      reader.readAsDataURL(file);
     }
-  });
+  };
+  reader.readAsDataURL(file);
 
   (event.target as HTMLInputElement).value = "";
 };
 
-const removeImage = (index: number) => {
-  uploadedImages.value.splice(index, 1);
+const removeImage = () => {
+  uploadedImage.value = null;
 };
 
 const sendMessage = async () => {
-  loading.value = true;
+  if (!uploadedImage) return;
 
-  uploadedImages.value.forEach((image) => {
-    messages.value.unshift({ type: "image", content: image.preview });
-  });
+  loading.value = true;
+  messages.value.unshift({ type: "image", content: uploadedImage.value.preview });
+
+  // Display AI processing message
+  const processingMessage = { type: "response", content: "AI is processing your image..." };
+  messages.value.unshift(processingMessage);
 
   const formData = new FormData();
-  uploadedImages.value.forEach((image) => {
-    formData.append("images", image.file);
-  });
+  formData.append("file", uploadedImage.value.file);
 
   try {
-    const response = await fetch("/api/process-images", {
-      method: "POST",
-      body: formData,
+    const fileUploadResponse = await api.post("/file", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${useUserStore().authToken}`,
+      },
     });
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
+    const contentObjectId = fileUploadResponse.data.contentObject.id;
 
-    const data = await response.json();
-    messages.value.unshift({ type: "response", content: data.message });
-  } catch (error) {
+    // Request processed file (Excel)
+    const response = await api.get(`/process-image?id=${contentObjectId}`, {
+      responseType: "blob",
+    });
+
+    messages.value = messages.value.filter(msg => msg.content !== "AI is processing your image...");
+
+    // Convert response into a downloadable file URL
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+    const fileUrl = window.URL.createObjectURL(blob);
+
+    // Better formatted download message
     messages.value.unshift({
       type: "response",
-      content: `Error: Failed to process the images. ${error.message}`,
+      content: `
+        <div class="flex flex-col items-start space-y-2 p-3 rounded-lg">
+          <p>Your image was processed!, you can download it here</p>
+          <a href="${fileUrl}" download="${contentObjectId}.xlsx"
+             class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition flex items-center space-x-2">
+            <span>Download Excel File</span>
+          </a>
+        </div>
+      `,
+      isHtml: true
     });
-    console.error("Error:", error);
+
+  } catch (error) {
+    messages.value = messages.value.filter(msg => msg.content !== "AI is processing your image...");
+    messages.value.unshift({ type: "response", content: "❌ Upload failed. Please try again." });
   } finally {
-    uploadedImages.value = [];
+    uploadedImage.value = null;
     loading.value = false;
   }
 };
+
 </script>

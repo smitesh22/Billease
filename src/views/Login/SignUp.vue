@@ -2,9 +2,7 @@
   <div class="min-h-screen flex flex-col justify-center items-center bg-gray-50">
     <!-- Logo Section -->
     <div class="mb-8">
-      <div class="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-        <span class="text-gray-500 text-sm">Logo</span>
-      </div>
+      <img src="/logo.svg" alt="Logo">
     </div>
 
     <!-- Form Section -->
