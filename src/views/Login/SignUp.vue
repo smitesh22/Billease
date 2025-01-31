@@ -103,7 +103,7 @@
       <!-- Login Link -->
       <div class="text-center text-sm text-gray-500 mt-4">
         Already have an account?
-        <a href="/login" class="text-green-600 hover:underline">Login</a>
+        <a href="/login" class="text-purple-600 hover:underline">Login</a>
       </div>
 
       <!-- Divider -->
@@ -155,7 +155,8 @@ const isUppercase = computed(() => /[A-Z]/.test(password.value));
 const isDigit = computed(() => /\d/.test(password.value));
 const isSpecialChar = computed(() => /[!@#$%^&*(),.?":{}|<>]/.test(password.value));
 const isLengthValid = computed(() => password.value.length >= 8);
-
+import {useGoogleAuth} from "../../componsables/useGoogleAuth";
+const { signInWithGoogle } = useGoogleAuth();
 
 onMounted(() => {
   if(localStorage.authToken){
@@ -208,53 +209,6 @@ const validateUserData = async () => {
       }
     }
   }
-};
-
-const signInWithGoogle = () => {
-  const googleAuthUrl = `${api.defaults.baseURL}/auth/google`;
-
-  const popup = window.open(
-      googleAuthUrl,
-      "googleSignIn",
-      "width=500,height=600"
-  );
-
-  if (!popup) {
-    console.error("Popup blocked by the browser. Please allow popups.");
-    return;
-  }
-
-  window.addEventListener("message", (event) => {
-    if (!event.origin.includes(api.defaults.baseURL)) {
-      return; // Ignore messages from unknown origins
-    }
-    const { token, user } = event.data || {};
-    if (token) {
-      localStorage.setItem("authToken", token);
-
-      userStore.setAuthToken(token);
-      // Set user data in the store
-      userStore.setUser({
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        isVerified: user.verified,
-        privileged: user.privileged,
-      });
-
-      router.push("/dashboard");
-    } else {
-      console.error("Google authentication failed: No token received.");
-    }
-  });
-
-  // Polling fallback
-  const checkPopup = setInterval(() => {
-    if (!popup || popup.closed) {
-      clearInterval(checkPopup);
-    }
-  }, 1000);
 };
 
 </script>

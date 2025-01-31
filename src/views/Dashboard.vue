@@ -80,17 +80,35 @@
         <input
             type="file"
             accept="image/*"
-            id="file-upload"
+            id="file-upload-attach"
             class="hidden"
             @change="handleFileUpload"
             :disabled="loading"
         />
         <label
-            for="file-upload"
-            class="bg-purple-500 text-white rounded-full w-12 h-12 flex items-center justify-center cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300"
+            for="file-upload-attach"
+            class="bg-purple-500 text-white rounded-full w-12 h-12 flex items-center justify-center cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300 mr-4"
             :class="{ 'opacity-50 pointer-events-none': loading }"
         >
           <i class="fa-solid fa-paperclip"></i>
+        </label>
+
+        <!-- Camera Button -->
+        <input
+            type="file"
+            accept="image/*"
+            id="file-upload-camera"
+            capture="environment"
+            class="hidden"
+            @change="handleFileUpload"
+            :disabled="loading"
+        />
+        <label
+            for="file-upload-camera"
+            class="bg-purple-500 text-white rounded-full w-12 h-12 flex items-center justify-center cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300"
+            :class="{ 'opacity-50 pointer-events-none': loading }"
+        >
+          <i class="fa-solid fa-camera-retro"></i>
         </label>
 
         <!-- Attachment Preview Section (Only One Image) -->
@@ -244,8 +262,13 @@ const sendMessage = async () => {
     });
 
   } catch (error) {
+    let errorMessage = "❌ Upload failed. Please try again.";
+    console.log(error.status);
+    errorMessage = error.status === 429
+        ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
+        : errorMessage;
     messages.value = messages.value.filter(msg => msg.content !== "AI is processing your image...");
-    messages.value.unshift({ type: "response", content: "❌ Upload failed. Please try again." });
+    messages.value.unshift({ type: "response", content: errorMessage });
   } finally {
     uploadedImage.value = null;
     loading.value = false;

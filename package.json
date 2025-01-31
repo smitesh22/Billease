@@ -22,7 +22,8 @@
     "vue": "^3.5.13",
     "vue-password": "^3.1.0",
     "vue-router": "^4.5.0",
-    "vue-stripe": "^0.1.52"
+    "vue-stripe": "^0.1.52",
+    "vue-web-cam": "^1.9.0"
   },
   "devDependencies": {
     "@stripe/stripe-js": "^5.4.0",
