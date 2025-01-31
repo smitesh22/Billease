@@ -131,6 +131,7 @@ onMounted(() => {
 });
 
 const handleSubmit = async () => {
+  showWarning.value = false;
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
   if (isValidEmail) {
     try {
@@ -164,8 +165,12 @@ const handleSubmit = async () => {
           path: '/verify',
           query: { email: email.value },
         });
-      } else if (error.response?.data?.message) {
+      }else if(error.response?.data?.message){
         warning.value = error.response.data.message;
+      }
+      else {
+        console.log(error.response);
+        warning.value = "An unexpected error occurred. Please try again.";
       }
     }
   } else {
