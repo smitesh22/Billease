@@ -62,6 +62,22 @@
           {{ message }}
         </div>
 
+        <!-- Divider -->
+        <div class="flex items-center my-6">
+          <div class="border-t border-gray-300 flex-grow"></div>
+          <span class="px-2 text-gray-500 text-sm">OR</span>
+          <div class="border-t border-gray-300 flex-grow"></div>
+        </div>
+
+
+        <!-- Google Login Button -->
+        <button
+            class="w-full flex items-center justify-center bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-sm hover:bg-gray-50"
+            @click="signInWithGoogle"
+        >
+          <img src="/google-icon.svg" class="h-5 w-5 mr-2" alt="Google Logo" />
+          <span class="text-sm font-medium text-gray-700">Sign In with Google</span>
+        </button>
         <!-- Register Link -->
         <div class="text-center text-sm text-gray-500 mt-4">
           Don't have an account?
@@ -78,6 +94,8 @@ import api from "../../api";
 import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "../../store/user.ts";
 import { AxiosError } from "axios";
+import {useGoogleAuth} from "../../componsables/useGoogleAuth";
+const { signInWithGoogle } = useGoogleAuth();
 
 const userStore = useUserStore();
 const email = ref('');

@@ -113,30 +113,15 @@
         <div class="border-t border-gray-300 flex-grow"></div>
       </div>
 
-      <!-- Social Login Buttons -->
-      <div class="space-y-3">
-        <button
-            class="w-full flex items-center justify-center bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-sm hover:bg-gray-50">
-          <div class="h-5 w-5 bg-gray-200 rounded-full flex items-center justify-center mr-2">
-            <span class="text-xs text-gray-500">G</span>
-          </div>
-          <span class="text-sm font-medium text-gray-700">Continue with Google</span>
-        </button>
-        <button
-            class="w-full flex items-center justify-center bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-sm hover:bg-gray-50">
-          <div class="h-5 w-5 bg-gray-200 rounded-full flex items-center justify-center mr-2">
-            <span class="text-xs text-gray-500">M</span>
-          </div>
-          <span class="text-sm font-medium text-gray-700">Continue with Microsoft Account</span>
-        </button>
-        <button
-            class="w-full flex items-center justify-center bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-sm hover:bg-gray-50">
-          <div class="h-5 w-5 bg-gray-200 rounded-full flex items-center justify-center mr-2">
-            <span class="text-xs text-gray-500">A</span>
-          </div>
-          <span class="text-sm font-medium text-gray-700">Continue with Apple</span>
-        </button>
-      </div>
+
+      <!-- Google Login Button -->
+      <button
+          class="w-full flex items-center justify-center bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-sm hover:bg-gray-50"
+          @click="signInWithGoogle"
+      >
+        <img src="/google-icon.svg" class="h-5 w-5 mr-2" alt="Google Logo" />
+        <span class="text-sm font-medium text-gray-700">Continue with Google</span>
+      </button>
     </div>
   </div>
 </template>
@@ -145,6 +130,7 @@
 import {ref, computed, onMounted} from "vue";
 import api from "../../api/index.ts";
 import {useRouter} from "vue-router";
+import {useUserStore} from "../../store/user.ts";
 
 const router = useRouter();
 const email = ref("");
@@ -152,6 +138,8 @@ const password = ref("");
 const firstName = ref('')
 const lastName = ref('')
 const buttonValue = ref("Continue");
+
+const userStore = useUserStore();
 
 const warning = ref("");
 const showLoginWarning = ref(false);
@@ -220,6 +208,53 @@ const validateUserData = async () => {
       }
     }
   }
+};
+
+const signInWithGoogle = () => {
+  const googleAuthUrl = `${api.defaults.baseURL}/auth/google`;
+
+  const popup = window.open(
+      googleAuthUrl,
+      "googleSignIn",
+      "width=500,height=600"
+  );
+
+  if (!popup) {
+    console.error("Popup blocked by the browser. Please allow popups.");
+    return;
+  }
+
+  window.addEventListener("message", (event) => {
+    if (!event.origin.includes(api.defaults.baseURL)) {
+      return; // Ignore messages from unknown origins
+    }
+    const { token, user } = event.data || {};
+    if (token) {
+      localStorage.setItem("authToken", token);
+
+      userStore.setAuthToken(token);
+      // Set user data in the store
+      userStore.setUser({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isVerified: user.verified,
+        privileged: user.privileged,
+      });
+
+      router.push("/dashboard");
+    } else {
+      console.error("Google authentication failed: No token received.");
+    }
+  });
+
+  // Polling fallback
+  const checkPopup = setInterval(() => {
+    if (!popup || popup.closed) {
+      clearInterval(checkPopup);
+    }
+  }, 1000);
 };
 
 </script>

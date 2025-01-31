@@ -17,7 +17,7 @@
     <!-- Main Section -->
     <main class="container mx-auto px-8 py-24 flex flex-col items-center text-center">
 
-    <<div class="w-full max-w-4xl flex flex-col items-center">
+    <div class="w-full max-w-4xl flex flex-col items-center">
       <h1 class="text-5xl font-bold mb-8 leading-relaxed">
         Transform Your Receipts into Excel
         <span class="bg-purple-600 text-white px-2 py-1 rounded-md">Effortlessly</span> 🚀
