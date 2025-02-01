@@ -54,11 +54,11 @@
             v-for="(message, index) in messages"
             :key="index"
             :class="[
-            'p-4 rounded-lg max-w-sm animate__animated animate__fadeInUp',
-            message.type === 'user' || message.type === 'image'
-              ? 'bg-purple-200  self-end text-right'
-              : 'self-start text-left',
-          ]"
+    'p-4 rounded-lg max-w-sm animate__animated animate__fadeInUp',
+    message.type === 'user' || message.type === 'image'
+      ? 'bg-purple-200  self-end text-right'
+      : 'self-start text-left',
+  ]"
         >
           <!-- If message is an image -->
           <div v-if="message.type === 'image'">
@@ -68,6 +68,15 @@
           <div v-else-if="message.isHtml" v-html="message.content"></div>
           <!-- If message is plain text -->
           <div v-else>{{ message.content }}</div>
+
+          <!-- Timestamp -->
+          <div
+              class="text-xs text-gray-500 mt-1"
+              :class="message.type === 'bot' ? 'text-left' : 'text-right'"
+              v-if="message.timestamp"
+          >
+            {{ message.timestamp }}
+          </div>
         </div>
       </div>
 
@@ -147,11 +156,14 @@
   </div>
 </template>
 
+
 <script setup lang="ts">
+import { format } from "date-fns"
 import { ref, computed, onMounted } from "vue";
-import { useUserStore } from "../store/user";
+import { useUserStore } from "../../store/user";
 import { useRouter } from "vue-router";
-import api from "../api";
+import api from "../../api";
+import { v4 as uuidv4 } from 'uuid';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -159,8 +171,8 @@ const privilegedUser = ref(false);
 const showModal = ref(false);
 const uploadedImage = ref<{ preview: string; file: File } | null>(null);
 const messages = ref<{ type: string; content: string }[]>([
-  { type: "bot", content: "Hello! How can I help you today?" },
 ]);
+
 const loading = ref(false);
 
 const toggleModal = () => {
@@ -176,103 +188,178 @@ const userInitials = computed(() => {
   return firstName.charAt(0).toUpperCase() + lastName.charAt(0).toUpperCase();
 });
 
-onMounted(() => {
+onMounted(async () => {
   privilegedUser.value = userStore.isPrivileged;
-});
+  if (userStore.isPrivileged) {
+    try {
+      const response = await api.get('/content-object', {
+        headers: {
+          Authorization: `Bearer ${useUserStore().authToken}`,
+        },
+      });
 
-const logout = () => {
-  userStore.clearAuthToken();
-  router.push("/");
-};
-
-const handleFileUpload = (event: Event) => {
-  const files = (event.target as HTMLInputElement).files;
-  if (!files || files.length === 0) return;
-
-  const file = files[0]; // Only take the first file
-  if (!file.type.startsWith("image/")) return;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    if (e.target?.result) {
-      uploadedImage.value = {
-        preview: e.target.result as string,
-        file: file,
-      };
+      if (response.data && Array.isArray(response.data)) {
+        response.data.forEach(contentObject => {
+          if (
+              contentObject.type === "content-object/image" &&
+              contentObject.extensions?.["content-object-extension/location"]
+          ) {
+            messages.value.unshift({
+              type: "image",
+              content: contentObject.extensions["content-object-extension/location"],
+              timestamp: format(new Date(contentObject.createdOn), "yyyy-MM-dd HH:mm"),
+            })
+          }else{
+            messages.value.unshift({
+              type: "bot",
+              content: `
+                <div class="flex flex-col items-start space-y-2 p-3 rounded-lg">
+                  <p>📂 Your processed Excel file is ready for download:</p>
+                  <a href="${contentObject.extensions["content-object-extension/location"]}"
+                     download
+                     class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition flex items-center space-x-2">
+                    <span>Download Excel File</span>
+                  </a>
+                </div>
+              `,
+              isHtml: true,
+              timestamp: format(new Date(contentObject.createdOn), "yyyy-MM-dd HH:mm"),
+            })
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching previous content objects:", error);
     }
+  }
+
+  messages.value.unshift({
+        type: "bot",
+        content: "Hello! How can I help you today?",
+        timestamp: format(new Date(), "yyyy-MM-dd HH:mm"),
+  })
+  });
+
+  const logout = () => {
+    userStore.clearAuthToken();
+    router.push("/");
   };
-  reader.readAsDataURL(file);
 
-  (event.target as HTMLInputElement).value = "";
-};
+  const handleFileUpload = (event: Event) => {
+    const files = (event.target as HTMLInputElement).files;
+    if (!files || files.length === 0) return;
 
-const removeImage = () => {
-  uploadedImage.value = null;
-};
+    const file = files[0]; // Only take the first file
+    if (!file.type.startsWith("image/")) return;
 
-const sendMessage = async () => {
-  if (!uploadedImage) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        uploadedImage.value = {
+          preview: e.target.result as string,
+          file: file,
+        };
+      }
+    };
+    reader.readAsDataURL(file);
 
-  loading.value = true;
-  messages.value.unshift({ type: "image", content: uploadedImage.value.preview });
+    (event.target as HTMLInputElement).value = "";
+  };
 
-  // Display AI processing message
-  const processingMessage = { type: "response", content: "AI is processing your image..." };
-  messages.value.unshift(processingMessage);
+  const removeImage = () => {
+    uploadedImage.value = null;
+  };
 
-  const formData = new FormData();
-  formData.append("file", uploadedImage.value.file);
+  const sendMessage = async () => {
+    if (!uploadedImage) return;
+    messages.value = messages.value.filter(msg => msg.content !== "Hello! How can I help you today?");
+    loading.value = true;
+    messages.value.unshift({ type: "image", content: uploadedImage.value.preview });
 
-  try {
-    const fileUploadResponse = await api.post("/file", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${useUserStore().authToken}`,
-      },
-    });
+    // Display AI processing message
+    const processingMessage = { type: "response", content: "AI is processing your image..." };
+    messages.value.unshift(processingMessage);
 
-    const contentObjectId = fileUploadResponse.data.contentObject.id;
+    const formData = new FormData();
+    formData.append("file", uploadedImage.value.file);
 
-    // Request processed file (Excel)
-    const response = await api.get(`/process-image?id=${contentObjectId}`, {
-      responseType: "blob",
-    });
+    try {
+      const fileUploadResponse = await api.post("/file", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${useUserStore().authToken}`,
+        },
+      });
 
-    messages.value = messages.value.filter(msg => msg.content !== "AI is processing your image...");
+      const contentObjectId = fileUploadResponse.data.contentObject.id;
 
-    // Convert response into a downloadable file URL
-    const blob = new Blob([response.data], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    });
-    const fileUrl = window.URL.createObjectURL(blob);
+      const response = await api.get(`/process-image?id=${contentObjectId}`, {
+        responseType: "blob",
+      });
 
-    // Better formatted download message
-    messages.value.unshift({
-      type: "response",
-      content: `
+      messages.value = messages.value.filter(msg => msg.content !== "AI is processing your image...");
+
+      // Convert response into a downloadable file URL
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+      const fileUrl = window.URL.createObjectURL(blob);
+      const excelFormData = new FormData();
+      excelFormData.append("file", blob, `${uuidv4()}.xlsx`);
+
+      const excelResponse = await api.post("/file?type=content-object/excel", excelFormData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${useUserStore().authToken}`,
+        },
+      });
+
+      console.log(excelResponse);
+
+      // Better formatted download message
+      messages.value.unshift({
+        type: "response",
+        content: `
         <div class="flex flex-col items-start space-y-2 p-3 rounded-lg">
-          <p>Your image was processed!, you can download it here</p>
+          <p>📂 Your processed Excel file is ready for download:</p>
           <a href="${fileUrl}" download="${contentObjectId}.xlsx"
              class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition flex items-center space-x-2">
             <span>Download Excel File</span>
           </a>
         </div>
       `,
-      isHtml: true
-    });
+        isHtml: true
+      });
 
-  } catch (error) {
-    let errorMessage = "❌ Upload failed. Please try again.";
-    console.log(error.status);
-    errorMessage = error.status === 429
-        ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
-        : errorMessage;
-    messages.value = messages.value.filter(msg => msg.content !== "AI is processing your image...");
-    messages.value.unshift({ type: "response", content: errorMessage });
-  } finally {
-    uploadedImage.value = null;
-    loading.value = false;
-  }
-};
+    } catch (error) {
+      let errorMessage = "❌ Upload failed. Please try again.";
+      console.log(error);
+      errorMessage = error.status === 429
+          ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
+          : errorMessage;
+      messages.value = messages.value.filter(msg => msg.content !== "AI is processing your image...");
+      messages.value.unshift({ type: "response", content: errorMessage });
+    } finally {
+      uploadedImage.value = null;
+      loading.value = false;
+    }
+  };
 
 </script>
+
+<style>
+.chat-messages::-webkit-scrollbar {
+  width: 8px; /* Adjust scrollbar width */
+  position: absolute;
+  right: 0;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2); /* Scrollbar color */
+  border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+</style>

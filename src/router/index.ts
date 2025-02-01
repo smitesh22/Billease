@@ -22,7 +22,7 @@ const router = createRouter({
         {
             path: "/dashboard",
             name: "Dashboard",
-            component: () => import("../views/Dashboard.vue"),
+            component: () => import("../views/Dashboard/Dashboard.vue"),
             beforeEnter: (_to, _from, next) => {
                 const userStore = useUserStore()
                 if(userStore.isAuthenticated){
