@@ -1,30 +1,46 @@
 <template>
-  <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-11/12 max-w-3xl bg-white shadow-lg flex flex-col items-center px-4 py-3 rounded-xl border border-gray-200" :class="{ 'opacity-50 pointer-events-none': chatStore.loading }">
-    <div class="w-full flex justify-start mb-3 px-9">
-      <div v-if="chatStore.uploadedImage" class="relative w-16 h-16 bg-gray-200 flex items-center justify-center shadow-md border border-gray-300 rounded-lg">
+  <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-3xl bg-gray-100 flex flex-col px-6 py-3 rounded-3xl border border-gray-300 shadow-md">
+
+    <div class="w-full flex flex-col items-start">
+
+      <!-- Image Preview Positioned Correctly Above Attach Button at Start -->
+      <div v-if="chatStore.uploadedImage" class="relative w-16 h-16 bg-gray-200 flex items-center justify-center shadow-md border border-gray-300 rounded-lg mb-2">
         <img :src="chatStore.uploadedImage.preview" alt="Selected Image" class="w-full h-full object-cover rounded-lg" />
-        <button class="absolute top-1 right-1 bg-gray-300 text-black rounded-full w-5 h-5 text-xs flex items-center justify-center hover:bg-red-600" @click="removeImage" :disabled="chatStore.loading">
+        <button class="absolute top-0 right-0 transform translate-x-2 -translate-y-2 bg-red-300 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-400 text-xs" @click="removeImage" :disabled="chatStore.loading">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-    </div>
-    <div class="flex items-center justify-between w-full px-4">
-      <div class="flex items-center space-x-4">
-        <input type="file" accept="image/*" id="file-upload-attach" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
-        <label for="file-upload-attach" class="bg-purple-500 text-white rounded-full w-12 h-12 flex items-center justify-center cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300">
-          <i class="fa-solid fa-paperclip"></i>
-        </label>
-        <input type="file" accept="image/*" id="file-upload-camera" capture="environment" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
-        <label for="file-upload-camera" class="bg-purple-500 text-white rounded-full w-12 h-12 flex items-center justify-center cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300">
-          <i class="fa-solid fa-camera-retro"></i>
-        </label>
+
+      <div class="w-full flex items-center justify-between">
+        <!-- Attach & Camera Buttons -->
+        <div class="flex items-center space-x-3 ml-0">
+          <!-- Attach Button -->
+          <input type="file" accept="image/*" id="file-upload-attach" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
+          <label for="file-upload-attach" class="flex items-center space-x-2 px-5 py-3 text-white bg-purple-500 hover:bg-purple-600 rounded-full shadow transition duration-200 cursor-pointer">
+            <i class="fa-solid fa-paperclip text-lg"></i>
+            <span class="font-medium text-lg">Attach</span>
+          </label>
+
+          <!-- Camera Button -->
+          <input type="file" accept="image/*" id="file-upload-camera" capture="environment" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
+          <label for="file-upload-camera" class="flex items-center justify-center bg-purple-500 hover:bg-purple-600 text-white rounded-full w-14 h-14 cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300">
+            <i class="fa-solid fa-camera text-lg"></i>
+          </label>
+        </div>
+
+        <!-- Fixed Position Generate Button -->
+        <button class="px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-full text-white font-semibold text-lg shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                aria-label="Send Message"
+                :disabled="!chatStore.uploadedImage || chatStore.loading"
+                @click="sendMessage">
+          Generate!
+        </button>
       </div>
-      <button class="bg-purple-500 text-white rounded-full w-12 h-12 flex items-center justify-center transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300" aria-label="Send Message" :disabled="!chatStore.uploadedImage || chatStore.loading" @click="sendMessage">
-        <i class="fa-solid fa-paper-plane"></i>
-      </button>
     </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { useChatStore } from '../../store/chatStore';
@@ -32,6 +48,8 @@ import { v4 as uuidv4 } from 'uuid';
 import api from '../../api';
 import { useUserStore } from "../../store/user";
 const chatStore = useChatStore();
+const userStore = useUserStore();
+import { format } from 'date-fns';
 
 const handleFileUpload = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
@@ -53,9 +71,15 @@ const removeImage = () => {
 };
 
 const sendMessage = async () => {
-  chatStore.messages = chatStore.messages.filter(msg => msg.content !== "Hello! How can I help you today?");
+  chatStore.messages = chatStore.messages.filter(msg => msg.content !== "Welcome back!");
   chatStore.loading = true;
-  chatStore.addMessage({ type: "image", content: chatStore.uploadedImage.preview });
+  chatStore.addMessage({
+    type: "image",
+    content: chatStore.uploadedImage?.preview ?? "",
+    isHtml: true,
+    timestamp: format(new Date(), "yyyy-MM-dd HH:mm"),
+    userInitials: userStore.getUserInitials,
+  });
 
   chatStore.addMessage({ type: "response", content: "AI is processing your image..." });
 
@@ -93,7 +117,7 @@ const sendMessage = async () => {
     });
 
     chatStore.addMessage({
-      type: "response",
+      type: "bot",
       content: `
         <div class="flex flex-col items-start space-y-2 p-3 rounded-lg">
           <p>📂 Your processed Excel file is ready for download:</p>
@@ -103,7 +127,8 @@ const sendMessage = async () => {
           </a>
         </div>
       `,
-      isHtml: true
+      isHtml: true,
+      timestamp : format(new Date(), "yyyy-MM-dd HH:mm")
     });
 
   } catch (error) {
@@ -120,3 +145,63 @@ const sendMessage = async () => {
   }
 };
 </script>
+
+<style>
+.glow-on-hover {
+  width: 150px;
+  height: 50px;
+  border: none;
+  outline: none;
+  color: #fff;
+  background: #6B46C1; /* Purple-500 */
+  cursor: pointer;
+  position: relative;
+  z-index: 0;
+  border-radius: 10px;
+  font-weight: bold;
+  transition: background 0.3s ease-in-out;
+}
+
+.glow-on-hover:before {
+  content: '';
+  background: linear-gradient(45deg, #9F7AEA, #805AD5, #6B46C1, #553C9A);
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  background-size: 400%;
+  z-index: -1;
+  filter: blur(8px);
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  animation: glowing 8s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  border-radius: 10px;
+}
+
+.glow-on-hover:hover {
+  background: #805AD5; /* Darker Purple */
+}
+
+.glow-on-hover:hover:before {
+  opacity: 1;
+}
+
+.glow-on-hover:after {
+  z-index: -1;
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #6B46C1; /* Purple-500 */
+  left: 0;
+  top: 0;
+  border-radius: 10px;
+}
+
+@keyframes glowing {
+  0% { background-position: 0 0; }
+  50% { background-position: 400% 0; }
+  100% { background-position: 0 0; }
+}
+</style>

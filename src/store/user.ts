@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import type User from "../models/user.ts";
+import {computed} from "vue";
 
 export const useUserStore = defineStore("user", {
     state: () => ({
@@ -28,11 +29,16 @@ export const useUserStore = defineStore("user", {
         clearUser() {
             this.user = null;
             localStorage.removeItem("user");
-        },
+        }
     },
     getters: {
         isAuthenticated: (state) => !!state.authToken,
         getUser: (state) => state.user,
         isPrivileged: (state) => state.user?.privileged || false,
+        getUserInitials(state) {
+            const firstName = state.user?.firstName || "U";
+            const lastName = state.user?.lastName || "";
+            return (firstName.charAt(0) + (lastName.charAt(0) || "")).toUpperCase();
+        }
     },
 });

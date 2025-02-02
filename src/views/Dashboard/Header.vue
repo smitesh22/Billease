@@ -7,7 +7,7 @@
       </div>
       <div class="relative">
         <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl text-gray-800" @click="toggleModal">
-          {{ userInitials }}
+          {{ userStore.getUserInitials }}
         </button>
         <div v-if="showModal" class="fixed inset-0 z-10 bg-black bg-opacity-25 flex items-center justify-center" @click.self="closeModal">
           <div class="bg-white rounded shadow-lg p-6">
@@ -26,8 +26,10 @@
 import { ref, computed } from 'vue';
 import { useUserStore } from '../../store/user';
 import { useRouter } from "vue-router";
+import {useChatStore} from "../../store/chatStore";
 
 const router = useRouter();
+const chatStore = useChatStore();
 const userStore = useUserStore();
 const privilegedUser = ref(userStore.isPrivileged);
 const showModal = ref(false);
@@ -40,13 +42,9 @@ const closeModal = () => {
   showModal.value = false;
 };
 
-const userInitials = computed(() => {
-  const { firstName = "User", lastName = "" } = userStore.user;
-  return firstName.charAt(0).toUpperCase() + lastName.charAt(0).toUpperCase();
-});
-
 const logout = () => {
   userStore.clearAuthToken();
+  chatStore.clearMessages();
   router.push("/");
 };
 </script>
