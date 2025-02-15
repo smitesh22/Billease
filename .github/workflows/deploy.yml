@@ -1,9 +1,9 @@
-name: Deploy to S3 and Invalidate CloudFront
+name: Deploy Vue App to S3 and Invalidate CloudFront
 
 on:
   push:
     branches:
-      - main  # Change this to your target branch if necessary
+      - main  # Change to your deployment branch if necessary
 
 jobs:
   deploy:
@@ -13,6 +13,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: |
+          npm install
+
+      - name: Build Vue App
+        run: |
+          npm run build  # This will generate the `dist` folder
+
       - name: Configure AWS CLI Manually
         run: |
           mkdir -p ~/.aws
@@ -20,17 +33,11 @@ jobs:
           echo "aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
           echo "aws_secret_access_key = ${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
           echo "[default]" > ~/.aws/config
-          echo "region = eu-west-1" >> ~/.aws/config  # Correct AWS region
+          echo "region = eu-west-1" >> ~/.aws/config
 
-      - name: Debug AWS CLI Configuration
+      - name: Sync Built Files to S3
         run: |
-          echo "AWS Region: $(aws configure get region)"
-          cat ~/.aws/credentials
-          aws sts get-caller-identity
-
-      - name: Sync Files to S3
-        run: |
-          aws s3 sync ./public s3://ledgefast --delete
+          aws s3 sync ./dist s3://ledgefast --delete
         env:
           AWS_REGION: eu-west-1
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
