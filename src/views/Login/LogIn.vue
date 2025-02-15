@@ -152,6 +152,8 @@ const handleSubmit = async () => {
         lastName: response.data.lastName,
         isVerified: response.data.verified,
         privileged: response.data.privileged,
+        subscriptionSetToEnd: !!response.data.extensions?.subscriptionEndDate,
+        subscriptionEndDate : response.data.extensions?.subscriptionEndDate
       });
 
       console.log("Logged in successfully, token stored in localStorage");
@@ -169,7 +171,7 @@ const handleSubmit = async () => {
         warning.value = error.response.data.message;
       }
       else {
-        console.log(error.response);
+        console.error(error.response);
         warning.value = "An unexpected error occurred. Please try again.";
       }
     }

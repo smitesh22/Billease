@@ -1,10 +1,11 @@
 import { useRouter } from "vue-router";
 import api from "../api/index.ts";
-import {useUserStore} from "../store/user";
+import { useUserStore } from "../store/user";
 
 export function useGoogleAuth() {
     const router = useRouter();
     const userStore = useUserStore();
+
     const signInWithGoogle = () => {
         const googleAuthUrl = `${api.defaults.baseURL}/auth/google`;
 
@@ -19,17 +20,14 @@ export function useGoogleAuth() {
             return;
         }
 
-        window.addEventListener("message", (event) => {
-            if (!event.origin.includes(api.defaults.baseURL)) {
-                return; // Ignore messages from unknown origins
-            }
+        const handleAuthMessage = (event) => {
+            if (!event.origin.includes(api.defaults.baseURL)) return;
 
             const { token, user } = event.data || {};
-
+            console.log(user);
             if (token) {
                 localStorage.setItem("authToken", token);
                 userStore.setAuthToken(token);
-                // Set user data in the store
                 userStore.setUser({
                     id: user.id,
                     email: user.email,
@@ -37,18 +35,27 @@ export function useGoogleAuth() {
                     lastName: user.lastName,
                     isVerified: user.verified,
                     privileged: user.privileged,
+                    subscriptionSetToEnd: !!user?.extensions?.userTypes.subscriptionEndDate,
+                    subscriptionEndDate : user?.extensions?.userTypes.subscriptionEndDate || null
                 });
-                router.push("/dashboard");
 
+                // Ensure we clean up event listener after receiving the message
+                window.removeEventListener("message", handleAuthMessage);
+                router.push("/dashboard");
+                window.focus();
             } else {
                 console.error("Google authentication failed: No token received.");
             }
-        });
+        };
 
-        // Polling fallback
+        // Add event listener for authentication message
+        window.addEventListener("message", handleAuthMessage);
+
+        // Periodically check if popup is closed, then remove event listener
         const checkPopup = setInterval(() => {
-            if (!popup || popup.closed) {
+            if (!popup) {
                 clearInterval(checkPopup);
+                window.removeEventListener("message", handleAuthMessage);
             }
         }, 1000);
     };

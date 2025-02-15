@@ -1,8 +1,11 @@
 <template>
   <header class="bg-gray-200 py-4 px-8 flex justify-between items-center">
-    <div><img src="/logo.svg" alt="Logo" class="h-10"></div>
+    <div class="flex items-center space-x-2">
+      <img src="/logo.svg" alt="Logo" class="h-10">
+      <img v-if="userStore.isPrivileged" src="/pro.svg" alt="Pro" class="h-6 mb-5">
+    </div>
     <div class="flex items-center space-x-4">
-      <div v-if="!privilegedUser" class="text-gray-500">
+      <div v-if="privilegedUser" class="text-gray-500">
         <a href="/pricing">Pricing</a>
       </div>
       <div class="relative">
@@ -10,12 +13,7 @@
           {{ userStore.getUserInitials }}
         </button>
         <div v-if="showModal" class="fixed inset-0 z-10 bg-black bg-opacity-25 flex items-center justify-center" @click.self="closeModal">
-          <div class="bg-white rounded shadow-lg p-6">
-            <p class="text-lg font-medium mb-4">Are you sure you want to log out?</p>
-            <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded" @click="logout">
-              Log Out
-            </button>
-          </div>
+          <Settings @close="closeModal"/>
         </div>
       </div>
     </div>
@@ -26,25 +24,20 @@
 import { ref, computed } from 'vue';
 import { useUserStore } from '../../store/user';
 import { useRouter } from "vue-router";
-import {useChatStore} from "../../store/chatStore";
+import { useChatStore } from "../../store/chatStore";
+import Settings from "./Settings.vue";
 
 const router = useRouter();
 const chatStore = useChatStore();
 const userStore = useUserStore();
-const privilegedUser = ref(userStore.isPrivileged);
+const privilegedUser = computed(() => userStore.isSubscriptionSetToEnd || !userStore.isPrivileged);
 const showModal = ref(false);
 
 const toggleModal = () => {
-  showModal.value = !showModal.value;
+  showModal.value = true;
 };
 
 const closeModal = () => {
   showModal.value = false;
-};
-
-const logout = () => {
-  userStore.clearAuthToken();
-  chatStore.clearMessages();
-  router.push("/");
 };
 </script>

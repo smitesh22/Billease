@@ -6,7 +6,7 @@
         <p class="text-lg text-gray-600 mt-2">Choose a plan that fits your needs perfectly.</p>
       </div>
 
-      <div class="flex justify-center mb-10">
+      <div class="flex justify-center rounded-3xl mb-10">
         <button
             class="px-6 py-2 text-lg font-medium rounded-l-md transition-all"
             :class="{
@@ -32,21 +32,21 @@
       <div class="flex flex-col md:flex-row justify-center gap-8">
         <div class="bg-white shadow-lg rounded-lg p-8 w-full md:w-1/3">
           <h3 class="text-2xl font-semibold text-gray-800">Basic Plan</h3>
-          <p class="text-gray-500 mt-2">Ideal for personal use.</p>
           <div class="text-4xl font-bold text-gray-900 mt-6">
-            <span>{{ isMonthly ? '€9' : '€97.20' }}</span>
+            <span>{{ isMonthly ? '€4.99' : '€49.99' }}</span>
             <span class="text-xl font-medium text-gray-500">/{{ isMonthly ? 'mo' : 'yr' }}</span>
           </div>
+          <div v-if="!isMonthly" class="mt-2 inline-block bg-green-100 text-green-800 text-sm font-semibold py-1 px-3 rounded-full">
+            17% Discount on Yearly Plan!
+          </div>
           <ul class="text-gray-600 mt-6 space-y-3">
-            <li>✔ Receipt uploads up to 10</li>
+            <li>✔ Unlimited image uploads</li>
             <li>✔ Excel file conversion</li>
-            <li>✔ User-friendly interface</li>
-            <li>✔ Chatbot assistance</li>
-            <li>✔ Access previous files</li>
-            <li>✔ 24/7 customer support</li>
+            <li>✔ Intuitive, user-friendly interface</li>
+            <li>✔ Access and manage previous files</li>
           </ul>
           <button
-              class="w-full bg-black text-white text-lg font-medium py-3 mt-6 rounded-md hover:bg-gray-800"
+              class="w-full bg-black text-white text-lg font-medium py-3 mt-6 rounded-xl hover:bg-gray-800"
               @click="handleSubmit"
           >
             Get Started
@@ -87,7 +87,11 @@
 import { nextTick, ref } from "vue";
 import { loadStripe } from "@stripe/stripe-js";
 import api from "../api/index";
-import {STRIPE_PRICEID_MONTHLY_TEST, STRIPE_PRICEID_YEARLY_TEST, STRIPE_PUBLISHABLE_KEY} from "../secrets/secrets";
+import {
+  STRIPE_PRICEID_MONTHLY,
+  STRIPE_PRICEID_YEARLY,
+  STRIPE_PUBLISHABLE_KEY
+} from "../secrets/secrets";
 import { useUserStore } from "../store/user";
 import {useRouter} from "vue-router";
 
@@ -111,8 +115,7 @@ const switchToYearly = () => {
 
 const openModal = async () => {
   try {
-    const priceId = isMonthly.value ? STRIPE_PRICEID_MONTHLY_TEST : STRIPE_PRICEID_YEARLY_TEST;
-    console.log(priceId);
+    const priceId = isMonthly.value ? STRIPE_PRICEID_MONTHLY : STRIPE_PRICEID_YEARLY;
     const response = await api.post("create-payment", {
       priceId,
       userId: user.getUser.id,
@@ -141,7 +144,7 @@ const closeModal = () => {
 };
 
 const handleSubmit = async () => {
-  console.log("User isAuthenticated:", user.isAuthenticated);// Add this log
+  console.log("User isAuthenticated:", user.isAuthenticated);
   if (user.isAuthenticated) {
     await openModal();
   } else {
@@ -167,7 +170,11 @@ const handlePayment = async () => {
         subscriptionType: isMonthly.value ? "monthly" : "yearly",
       })
       user.setIsSubscribed(true);
-      await router.push("/dashboard");
+      user.clearSubscriptionSetToEnd();
+      await router.push({
+        path: "/dashboard",
+        query: { message: "Subscription successful! Welcome to the Pro plan!" }
+      });
       closeModal();
     }
   } catch (error) {

@@ -1,11 +1,10 @@
 import { defineStore } from "pinia";
 import type User from "../models/user.ts";
-import {computed} from "vue";
 
 export const useUserStore = defineStore("user", {
     state: () => ({
         authToken: localStorage.getItem("authToken") || null, // Initialize from localStorage
-        user: JSON.parse(localStorage.getItem("user") || "null"),
+        user: JSON.parse(localStorage.getItem("user") || "null") as User || null,
     }),
     actions: {
         setAuthToken(token: string) {
@@ -29,12 +28,23 @@ export const useUserStore = defineStore("user", {
         clearUser() {
             this.user = null;
             localStorage.removeItem("user");
+        },
+        setSubscriptionSetToEnd(subscriptionEndDate: string) {
+            this.user.subscriptionSetToEnd = true;
+            this.user.subscriptionEndDate = subscriptionEndDate;
+            localStorage.setItem("user", JSON.stringify(this.user));
+        },
+        clearSubscriptionSetToEnd(){
+            this.user.subscriptionSetToEnd = false;
+            this.user.subscriptionEndDate = null;
+            localStorage.setItem("user", JSON.stringify(this.user));
         }
     },
     getters: {
         isAuthenticated: (state) => !!state.authToken,
         getUser: (state) => state.user,
         isPrivileged: (state) => state.user?.privileged || false,
+        isSubscriptionSetToEnd: (state) => state.user?.subscriptionSetToEnd,
         getUserInitials(state) {
             const firstName = state.user?.firstName || "U";
             const lastName = state.user?.lastName || "";

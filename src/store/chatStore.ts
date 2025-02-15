@@ -5,6 +5,8 @@ import { format } from 'date-fns';
 import api from '../api';
 import { useUserStore } from './user';
 
+export const welcomeMessage = 'Welcome back! Simplify your expense tracking in seconds—just attach your receipt images below, and let our AI engine convert them into an Excel file.';
+
 export const useChatStore = defineStore('chat', () => {
     const messages = ref<{ type: string; content: string; isHtml?: boolean; timestamp?: string, userInitials?: string }[]>([]);
     const uploadedImage = ref<{ preview: string; file: File } | null>(null);
@@ -32,13 +34,13 @@ export const useChatStore = defineStore('chat', () => {
                             if (contentObject.type === 'content-object/excel') {
                                 messages.value.unshift({
                                     type: 'bot',
-                                    content: `<div class='flex flex-col items-start space-y-2 p-3 rounded-lg'>
-                                    <p>📂 Your processed Excel file is ready for download:</p>
+                                    content: `<div class='flex flex-col items-start space-y-2 p-3 mt-0 rounded-lg'>
+                                    <p>Your processed Excel file is ready for download 📂:</p>
                                     <a
                                       href="${contentObject.extensions["content-object-extension/location"]}"
                                       download
                                       target="_blank"
-                                      class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-purple-500 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
+                                      class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white bg-purple-500 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
                                     >
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -70,12 +72,12 @@ export const useChatStore = defineStore('chat', () => {
                             }
                         });
                     }
-                    messages.value.unshift({ type: 'bot', content: "Welcome back!", timestamp: format(new Date(), "yyyy-MM-dd HH:mm") });
+                    messages.value.unshift({ type: 'bot', content: welcomeMessage, timestamp: format(new Date(), "yyyy-MM-dd HH:mm") });
                 } catch (error) {
                     console.error("Error fetching previous content objects:", error);
                 }
             }else{
-                messages.value.unshift({ type: 'bot', content: "Welcome back!", timestamp: format(new Date(), "yyyy-MM-dd HH:mm") });
+                messages.value.unshift({ type: 'bot', content: welcomeMessage, timestamp: format(new Date(), "yyyy-MM-dd HH:mm") });
             }
         }
     };

@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.bottom-bar {
+    animation-fill-mode: forwards;
+}

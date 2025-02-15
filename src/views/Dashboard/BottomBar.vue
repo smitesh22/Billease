@@ -1,5 +1,8 @@
 <template>
-  <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-3xl bg-gray-100 flex flex-col px-6 py-3 rounded-3xl border border-gray-300 shadow-md">
+  <div class="w-full flex justify-center bg-gray-50">
+    <div
+        class="absolute bottom-5 left-1/2 transform -translate-x-1/2 w-full max-w-3xl
+             bg-purple-50 flex flex-col px-6 py-3 rounded-3xl border border-gray-300 shadow-md">
 
     <div class="w-full flex flex-col items-start">
 
@@ -16,20 +19,20 @@
         <div class="flex items-center space-x-3 ml-0">
           <!-- Attach Button -->
           <input type="file" accept="image/*" id="file-upload-attach" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
-          <label for="file-upload-attach" class="flex items-center space-x-2 px-5 py-3 text-white bg-purple-500 hover:bg-purple-600 rounded-full shadow transition duration-200 cursor-pointer">
+          <label for="file-upload-attach" class="flex items-center space-x-2 px-5 py-3 text-white bg-purple-500 hover:bg-purple-600 rounded-2xl shadow transition duration-200 cursor-pointer">
             <i class="fa-solid fa-paperclip text-lg"></i>
             <span class="font-medium text-lg">Attach</span>
           </label>
 
           <!-- Camera Button -->
           <input type="file" accept="image/*" id="file-upload-camera" capture="environment" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
-          <label for="file-upload-camera" class="flex items-center justify-center bg-purple-500 hover:bg-purple-600 text-white rounded-full w-14 h-14 cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300">
+          <label for="file-upload-camera" class="flex items-center justify-center bg-purple-500 hover:bg-purple-600 text-white rounded-2xl w-14 h-14 cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300">
             <i class="fa-solid fa-camera text-lg"></i>
           </label>
         </div>
 
         <!-- Fixed Position Generate Button -->
-        <button class="px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-full text-white font-semibold text-lg shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        <button class="px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-2xl text-white font-semibold text-lg shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 type="button"
                 aria-label="Send Message"
                 :disabled="!chatStore.uploadedImage || chatStore.loading"
@@ -39,11 +42,12 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 
 <script setup lang="ts">
-import { useChatStore } from '../../store/chatStore';
+import {useChatStore, welcomeMessage} from '../../store/chatStore';
 import { v4 as uuidv4 } from 'uuid';
 import api from '../../api';
 import { useUserStore } from "../../store/user";
@@ -71,7 +75,7 @@ const removeImage = () => {
 };
 
 const sendMessage = async () => {
-  chatStore.messages = chatStore.messages.filter(msg => msg.content !== "Welcome back!");
+  chatStore.messages = chatStore.messages.filter(msg => msg.content !== welcomeMessage);
   chatStore.loading = true;
   chatStore.addMessage({
     type: "image",
@@ -138,70 +142,10 @@ const sendMessage = async () => {
         ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
         : errorMessage;
     chatStore.messages = chatStore.messages.filter(msg => msg.content !== "AI is processing your image...");
-    chatStore.addMessage({ type: "response", content: errorMessage });
+    chatStore.addMessage({ type: "bot", content: errorMessage });
   } finally {
     chatStore.uploadedImage = null;
     chatStore.loading = false;
   }
 };
 </script>
-
-<style>
-.glow-on-hover {
-  width: 150px;
-  height: 50px;
-  border: none;
-  outline: none;
-  color: #fff;
-  background: #6B46C1; /* Purple-500 */
-  cursor: pointer;
-  position: relative;
-  z-index: 0;
-  border-radius: 10px;
-  font-weight: bold;
-  transition: background 0.3s ease-in-out;
-}
-
-.glow-on-hover:before {
-  content: '';
-  background: linear-gradient(45deg, #9F7AEA, #805AD5, #6B46C1, #553C9A);
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  background-size: 400%;
-  z-index: -1;
-  filter: blur(8px);
-  width: calc(100% + 4px);
-  height: calc(100% + 4px);
-  animation: glowing 8s linear infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
-  border-radius: 10px;
-}
-
-.glow-on-hover:hover {
-  background: #805AD5; /* Darker Purple */
-}
-
-.glow-on-hover:hover:before {
-  opacity: 1;
-}
-
-.glow-on-hover:after {
-  z-index: -1;
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: #6B46C1; /* Purple-500 */
-  left: 0;
-  top: 0;
-  border-radius: 10px;
-}
-
-@keyframes glowing {
-  0% { background-position: 0 0; }
-  50% { background-position: 400% 0; }
-  100% { background-position: 0 0; }
-}
-</style>

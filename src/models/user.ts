@@ -4,4 +4,7 @@ export default interface User {
     firstName: string;
     lastName: string;
     isVerified: boolean;
+    isPrivileged: boolean;
+    isSubscriptionSetToEnd: boolean;
+    subscriptionEndDate: string;
 }
