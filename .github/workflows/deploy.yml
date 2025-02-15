@@ -3,7 +3,7 @@ name: Deploy to S3 and Invalidate CloudFront
 on:
   push:
     branches:
-      - main  # Change this to your target branch if needed
+      - main  # Change this to your target branch if necessary
 
 jobs:
   deploy:
@@ -13,17 +13,25 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+      - name: Configure AWS CLI Manually
+        run: |
+          mkdir -p ~/.aws
+          echo "[default]" > ~/.aws/credentials
+          echo "aws_access_key_id=${{ secrets.AWS_ACCESS_KEY_ID }}" >> ~/.aws/credentials
+          echo "aws_secret_access_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ~/.aws/credentials
+          echo "[default]" > ~/.aws/config
+          echo "region=eu-west-1" >> ~/.aws/config  # Correct AWS region
 
-      - name: Sync S3 Bucket
+      - name: Sync Files to S3
         run: |
           aws s3 sync ./public s3://ledgefast --delete
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation --distribution-id E3NIKHZ9MGONHB --paths "/*"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
