@@ -4,7 +4,7 @@ import type User from "../models/user.ts";
 export const useUserStore = defineStore("user", {
     state: () => ({
         authToken: localStorage.getItem("authToken") || null, // Initialize from localStorage
-        user: JSON.parse(localStorage.getItem("user") || "null") as User || null,
+        user: JSON.parse(localStorage.getItem("user") || "null") as User | null,
     }),
     actions: {
         setAuthToken(token: string) {
@@ -18,8 +18,10 @@ export const useUserStore = defineStore("user", {
             this.clearUser();
         },
         setIsSubscribed(subscribed: boolean) {
-            this.user.isPrivileged = subscribed;
-            localStorage.setItem("user", JSON.stringify(this.user));
+            if (this.user) {
+                this.user.isPrivileged = subscribed;
+                localStorage.setItem("user", JSON.stringify(this.user));
+            }
         },
         setUser(user: User) {
             this.user = user;
@@ -30,21 +32,25 @@ export const useUserStore = defineStore("user", {
             localStorage.removeItem("user");
         },
         setSubscriptionSetToEnd(subscriptionEndDate: string) {
-            this.user.subscriptionSetToEnd = true;
-            this.user.subscriptionEndDate = subscriptionEndDate;
-            localStorage.setItem("user", JSON.stringify(this.user));
+            if(this.user) {
+                this.user.isSubscriptionSetToEnd = true;
+                this.user.subscriptionEndDate = subscriptionEndDate;
+                localStorage.setItem("user", JSON.stringify(this.user));
+            }
         },
         clearSubscriptionSetToEnd(){
-            this.user.subscriptionSetToEnd = false;
-            this.user.subscriptionEndDate = null;
-            localStorage.setItem("user", JSON.stringify(this.user));
+            if(this.user) {
+                this.user.isSubscriptionSetToEnd = false;
+                this.user.subscriptionEndDate = null;
+                localStorage.setItem("user", JSON.stringify(this.user));
+            }
         }
     },
     getters: {
         isAuthenticated: (state) => !!state.authToken,
         getUser: (state) => state.user,
-        isPrivileged: (state) => state.user?.privileged || false,
-        isSubscriptionSetToEnd: (state) => state.user?.subscriptionSetToEnd,
+        isPrivileged: (state) => state.user?.isPrivileged || false,
+        isSubscriptionSetToEnd: (state) => state.user?.isSubscriptionSetToEnd,
         getUserInitials(state) {
             const firstName = state.user?.firstName || "U";
             const lastName = state.user?.lastName || "";

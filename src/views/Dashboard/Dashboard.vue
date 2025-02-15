@@ -42,6 +42,12 @@
 
 
 <script setup lang="ts">
+
+declare global {
+  interface Window {
+    adsbygoogle: any;
+  }
+}
 import { ref, computed, onMounted } from "vue";
 import { useUserStore } from "../../store/user";
 import { useRouter } from "vue-router";

@@ -1,6 +1,13 @@
-import { loadStripe } from "@stripe/stripe-js";
-import {STRIPE_PUBLISHABLE_KEY} from "../secrets/secrets.ts";
+import { loadStripe, Stripe } from "@stripe/stripe-js";
+import { STRIPE_PUBLISHABLE_KEY } from "../secrets/secrets";
 
-const stripe = await loadStripe(STRIPE_PUBLISHABLE_KEY);
+let stripePromise: Promise<Stripe | null>;
 
-export default stripe;
+async function getStripeInstance() {
+    if (!stripePromise) {
+        stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+    }
+    return stripePromise;
+}
+
+export default getStripeInstance;

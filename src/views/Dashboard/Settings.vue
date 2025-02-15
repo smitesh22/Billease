@@ -91,7 +91,7 @@ const logout = () => {
 
 const confirmDelete = async () => {
   showDeleteConfirm.value = true;
-  const userId = userStore.getUser.id;
+  const userId = userStore.getUser?.id;
   try {
     const res = await api.delete(`/user?id=${userId}`, {
       headers: { Authorization: `Bearer ${useUserStore().authToken}` },
@@ -110,7 +110,7 @@ const confirmDelete = async () => {
 
 const confirmUnsubscribe = async () => {
   showUnsubscribeConfirm.value = true;
-  const userId = userStore.getUser.id;
+  const userId = userStore.getUser?.id;
 
   try {
     const res = await api.delete(`/cancel-subscription?userId=${userId}`, {

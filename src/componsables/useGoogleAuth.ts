@@ -1,5 +1,5 @@
 import { useRouter } from "vue-router";
-import api from "../api/index.ts";
+import api from "../api/index";
 import { useUserStore } from "../store/user";
 
 export function useGoogleAuth() {

@@ -88,7 +88,9 @@ const sendMessage = async () => {
   chatStore.addMessage({ type: "response", content: "AI is processing your image..." });
 
   const formData = new FormData();
-  formData.append("file", chatStore.uploadedImage.file);
+  if (chatStore.uploadedImage) {
+    formData.append("file", chatStore.uploadedImage.file);
+  }
 
   try {
     const fileUploadResponse = await api.post("/file", formData, {
@@ -137,8 +139,8 @@ const sendMessage = async () => {
 
   } catch (error) {
     let errorMessage = "❌ Upload failed. Please try again.";
-    console.error(error);
-    errorMessage = error.status === 429
+    const err = error as any;
+    errorMessage = err.status === 429
         ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
         : errorMessage;
     chatStore.messages = chatStore.messages.filter(msg => msg.content !== "AI is processing your image...");

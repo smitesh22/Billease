@@ -151,9 +151,9 @@ const resendOtp = async () => {
     showMessage.value = true;
     message.value = "A new OTP has been sent to your email.";
   } catch (err: unknown) {
-    console.error(err);
     showError.value = true;
-    error.value = err.response.data.message;
+    const errorVal = err as any;
+    error.value = errorVal.response.data.message;
   } finally {
     loading.value = false;
   }

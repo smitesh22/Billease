@@ -6,5 +6,5 @@ export default interface User {
     isVerified: boolean;
     isPrivileged: boolean;
     isSubscriptionSetToEnd: boolean;
-    subscriptionEndDate: string;
+    subscriptionEndDate: string|null;
 }

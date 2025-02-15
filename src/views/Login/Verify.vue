@@ -83,7 +83,7 @@ const handleSubmit = async () => {
       query: { message: "You have been registered!, Please log in!" }
     });
 
-  } catch (error) {
+  } catch (error : any) {
     console.error(error);
     showWarning.value = true;
     warning.value = error.response.data.message;
@@ -102,7 +102,7 @@ const resendCode = async () => {
 
   }catch(error: unknown){
     showWarning.value = true;
-    showWarning.value = error;
+    message.value = error as string;
   }
 }
 </script>

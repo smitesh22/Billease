@@ -92,7 +92,7 @@
 import { onMounted, ref } from "vue";
 import api from "../../api";
 import { useRoute, useRouter } from "vue-router";
-import { useUserStore } from "../../store/user.ts";
+import { useUserStore } from "../../store/user";
 import { AxiosError } from "axios";
 import {useGoogleAuth} from "../../componsables/useGoogleAuth";
 const { signInWithGoogle } = useGoogleAuth();
@@ -151,8 +151,8 @@ const handleSubmit = async () => {
         firstName: response.data.firstName,
         lastName: response.data.lastName,
         isVerified: response.data.verified,
-        privileged: response.data.privileged,
-        subscriptionSetToEnd: !!response.data.extensions?.subscriptionEndDate,
+        isPrivileged: response.data.privileged,
+        isSubscriptionSetToEnd: !!response.data.extensions?.subscriptionEndDate,
         subscriptionEndDate : response.data.extensions?.subscriptionEndDate
       });
 
@@ -161,17 +161,17 @@ const handleSubmit = async () => {
     } catch (error: unknown) {
       console.error("Error logging in:", error);
       showWarning.value = true;
-      if (error instanceof AxiosError && error.response?.data?.message === "User is not verified") {
+
+      if (error instanceof AxiosError && error.response?.data?.message) {
         warning.value = error.response.data.message;
-        await router.push({
-          path: '/verify',
-          query: { email: email.value },
-        });
-      }else if(error.response?.data?.message){
-        warning.value = error.response.data.message;
-      }
-      else {
-        console.error(error.response);
+
+        if (error.response.data.message === "User is not verified") {
+          await router.push({
+            path: '/verify',
+            query: { email: email.value },
+          });
+        }
+      } else {
         warning.value = "An unexpected error occurred. Please try again.";
       }
     }
