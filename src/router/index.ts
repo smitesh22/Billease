@@ -17,7 +17,7 @@ const router = createRouter({
         {
             path: "/login",
             name: "LogIn",
-            component: () => import("../views/Login/Login.vue")
+            component: () => import("../views/Login/LogIn.vue")
         },
         {
             path: "/dashboard",
@@ -36,7 +36,7 @@ const router = createRouter({
             path: "/verify",
             name: "verify",
             component: () => import("../views/Login/Verify.vue"),
-            beforeEnter: (to, from, next) => {
+            beforeEnter: (_to, from, next) => {
                 if (from.name === "SignUp") {
                     next();
                 } else {
@@ -68,7 +68,7 @@ const router = createRouter({
             path: "/reset-password",
             name: "Reset Password",
             component: () => import("../views/Login/ResetPassword.vue"),
-            beforeEnter: (to, from, next) => {
+            beforeEnter: (_to, from, next) => {
                 if (from.name === "Forgot Password") {
                     next(); // Allow navigation if coming from Forgot Password
                 } else {

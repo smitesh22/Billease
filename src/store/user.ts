@@ -18,7 +18,7 @@ export const useUserStore = defineStore("user", {
             this.clearUser();
         },
         setIsSubscribed(subscribed: boolean) {
-            this.user.privileged = subscribed;
+            this.user.isPrivileged = subscribed;
             localStorage.setItem("user", JSON.stringify(this.user));
         },
         setUser(user: User) {

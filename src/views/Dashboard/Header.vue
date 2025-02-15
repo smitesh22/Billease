@@ -27,8 +27,6 @@ import { useRouter } from "vue-router";
 import { useChatStore } from "../../store/chatStore";
 import Settings from "./Settings.vue";
 
-const router = useRouter();
-const chatStore = useChatStore();
 const userStore = useUserStore();
 const privilegedUser = computed(() => userStore.isSubscriptionSetToEnd || !userStore.isPrivileged);
 const showModal = ref(false);

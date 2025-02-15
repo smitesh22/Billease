@@ -7,7 +7,7 @@ export function useGoogleAuth() {
     const userStore = useUserStore();
 
     const signInWithGoogle = () => {
-        const googleAuthUrl = `${api.defaults.baseURL}/auth/google`;
+        const googleAuthUrl = `${api.defaults.baseURL as string}/auth/google`;
 
         const popup = window.open(
             googleAuthUrl,
@@ -20,8 +20,8 @@ export function useGoogleAuth() {
             return;
         }
 
-        const handleAuthMessage = (event) => {
-            if (!event.origin.includes(api.defaults.baseURL)) return;
+        const handleAuthMessage = (event: MessageEvent) => {
+            if (!event.origin.includes(api.defaults.baseURL as string)) return;
 
             const { token, user } = event.data || {};
             console.log(user);
@@ -34,8 +34,8 @@ export function useGoogleAuth() {
                     firstName: user.firstName,
                     lastName: user.lastName,
                     isVerified: user.verified,
-                    privileged: user.privileged,
-                    subscriptionSetToEnd: !!user?.extensions?.userTypes.subscriptionEndDate,
+                    isPrivileged: user.privileged,
+                    isSubscriptionSetToEnd: !!user?.extensions?.userTypes.subscriptionEndDate,
                     subscriptionEndDate : user?.extensions?.userTypes.subscriptionEndDate || null
                 });
 
