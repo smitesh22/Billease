@@ -71,7 +71,16 @@ const router = createRouter({
                 }
             }
         }
-    ]
+    ],
+    scrollBehavior(to, from, savedPosition) {
+        if (to.path === "/") {
+            return { top: 0 };
+        }
+        if (savedPosition) {
+            return savedPosition;
+        }
+        return {};
+    }
 });
 
 export default router;
