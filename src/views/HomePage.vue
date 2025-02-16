@@ -23,7 +23,7 @@
         <span class="bg-purple-600 text-white px-2 py-1 rounded-md">Effortlessly</span> 🚀
       </h1>
       <p class="text-gray-600 mb-10 text-lg max-w-2xl">
-        Welcome to ZenPay, where managing your finances becomes a breeze.
+        Welcome to LedgeFast, where managing your finances becomes a breeze.
         Upload your receipts and invoices, and watch them convert into organized Excel files in seconds.
       </p>
       <div class="flex space-x-6">

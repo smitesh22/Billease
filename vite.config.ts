@@ -1,27 +1,33 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 
-export default defineConfig({
-  plugins: [vue()],
-  build: {
-    sourcemap: true, // Enables source maps for better debugging
-    minify: 'terser', // Use terser for controlled minification
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['vue'] // Separates Vue into its own chunk for easier debugging
+export default defineConfig(({ mode }) => {
+  console.log(`Running Vite in ${mode} mode`);
+
+  const isDev = mode === 'development';
+
+  return {
+    plugins: [vue()],
+    build: {
+      sourcemap: isDev, // Enable source maps only for dev builds
+      minify: isDev ? false : 'terser', // Skip minification in dev builds
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['vue']
+          }
         }
       }
+    },
+    server: {
+      open: true,
+      port: 5173,
+      hmr: {
+        overlay: true
+      }
+    },
+    optimizeDeps: {
+      include: ['vue']
     }
-  },
-  server: {
-    open: true, // Automatically opens the browser on `vite dev`
-    port: 3000, // You can change this if you want a different port
-    hmr: {
-      overlay: true // Shows a full-screen overlay for errors during development
-    }
-  },
-  optimizeDeps: {
-    include: ['vue'] // Pre-bundle Vue to improve development performance
-  }
+  };
 });
