@@ -21,7 +21,8 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # No build step for dev deployment
+      - name: Build Vue App
+        run: npm run build
 
       - name: Configure AWS CLI Manually
         run: |
@@ -32,9 +33,9 @@ jobs:
           echo "[default]" > ~/.aws/config
           echo "region = eu-west-1" >> ~/.aws/config
 
-      - name: Sync Source Files to S3
+      - name: Sync Build Files to S3
         run: |
-          aws s3 sync . s3://dev-ledgefast --delete
+          aws s3 sync ./dist s3://dev-ledgefast --delete
         env:
           AWS_REGION: eu-west-1
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -43,3 +44,5 @@ jobs:
       - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation --distribution-id E1P0RBSL1DLD1F --paths "/*"
+        env:
+          AWS_REGION: eu-west-1
