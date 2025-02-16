@@ -99,13 +99,14 @@ const sendMessage = async () => {
         Authorization: `Bearer ${useUserStore().authToken}`
       },
     });
-
+    console.log(fileUploadResponse);
     const contentObjectId = fileUploadResponse.data.contentObject.id;
     const response = await api.get(`/process-image?id=${contentObjectId}`, {
       responseType: "blob",
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
     });
-
+    console.log('processed_image');
+    console.log(response);
     chatStore.messages = chatStore.messages.filter(msg => msg.content !== "AI is processing your image...");
 
     const blob = new Blob([response.data], {
