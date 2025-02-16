@@ -21,16 +21,16 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Use .env.development
-        run: cp .env.development .env
+      - name: Create .env file from secret
+        run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env.development
 
       - name: Verify .env file
-        run: cat .env
+        run: cat .env.development
 
-      - name: Build Vue App
+      - name: Build Vue App (Development Mode)
         run: npm run build -- --mode development
 
-      - name: Configure AWS CLI Manually
+      - name: Configure AWS CLI
         run: |
           mkdir -p ~/.aws
           echo "[default]" > ~/.aws/credentials
@@ -41,12 +41,6 @@ jobs:
 
       - name: Sync Build Files to S3
         run: aws s3 sync ./dist s3://dev-ledgefast --delete
-        env:
-          AWS_REGION: eu-west-1
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Invalidate CloudFront Cache
         run: aws cloudfront create-invalidation --distribution-id E1P0RBSL1DLD1F --paths "/*"
-        env:
-          AWS_REGION: eu-west-1
