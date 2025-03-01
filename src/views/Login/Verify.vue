@@ -24,18 +24,29 @@
         {{message}}
       </div>
       <div class="mb-4">
-      <button
-          class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
-          @click="handleSubmit"
-      >
-        Verify Email
-      </button>
+        <button
+            class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300 flex justify-center items-center"
+            @click="handleSubmit"
+            :disabled="isVerifying"
+        >
+          <span v-if="!isVerifying">Verify Email</span>
+          <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </button>
       </div>
+
       <button
-          class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
+          class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300 flex justify-center items-center"
           @click="resendCode"
+          :disabled="isResending"
       >
-        Resend Code
+        <span v-if="!isResending">Resend Code</span>
+        <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
       </button>
 
     </div>
@@ -58,6 +69,9 @@ const warning = ref("");
 
 const route = useRoute();
 
+const isVerifying = ref(false);
+const isResending = ref(false);
+
 onMounted(() => {
   if(localStorage.authToken){
     router.push('/dashboard')
@@ -67,6 +81,9 @@ onMounted(() => {
 });
 
 const handleSubmit = async () => {
+  if (isVerifying.value || !userEmail.value) return; // Prevent multiple clicks
+  isVerifying.value = true;
+
   if (!userEmail.value) {
     console.error("User Email is not available.");
     return;
@@ -88,9 +105,14 @@ const handleSubmit = async () => {
     showWarning.value = true;
     warning.value = error.response.data.message;
   }
+
+  isVerifying.value = false;
 };
 
 const resendCode = async () => {
+  if (isResending.value) return; // Prevent multiple clicks
+  isResending.value = true;
+
   try{
     const response = await api.post("resend-token", {
       email: userEmail.value,
@@ -104,5 +126,6 @@ const resendCode = async () => {
     showWarning.value = true;
     message.value = error as string;
   }
+  isResending.value = false;
 }
 </script>

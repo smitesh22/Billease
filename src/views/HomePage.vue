@@ -7,7 +7,7 @@
         <img src="/logo.svg" alt="Logo" class="h-10">
       </div>
       <div class="flex items-center space-x-4">
-        <div class="text-gray-500"><a href="#pricing" class="text-gray-500 hover:underline">Pricing</a></div>
+        <div class="text-gray-500"><button @click=scrollToPricing class="text-gray-500 hover:underline">Pricing</button></div>
         <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl text-gray-800" @click="goToLogIn">Log In</button>
         <button class="bg-purple-600 text-white px-4 py-2 rounded-xl" @click="goToSignUp">Sign Up</button>
       </div>
@@ -26,7 +26,12 @@
         </p>
         <div class="flex space-x-6">
           <button class="bg-black text-white px-8 py-3 rounded-lg text-lg"><a href="/signup">Get Started</a></button>
-          <button class="bg-gray-100 hover:bg-gray-200 px-8 py-3 rounded-lg text-lg"><a href="#cards">Learn More</a></button>
+          <button
+              class="bg-gray-100 hover:bg-gray-200 px-8 py-3 rounded-lg text-lg"
+              @click="scrollToCards"
+          >
+            Learn More
+          </button>
         </div>
       </div>
 
@@ -55,6 +60,19 @@ onMounted(() => {
     router.push("/dashboard");
   }
 });
+const scrollToCards = () => {
+  const element = document.getElementById("cards");
+  if (element) {
+    element.scrollIntoView({ behavior: "smooth" });
+  }
+};
+
+const scrollToPricing = () => {
+  const element = document.getElementById("pricing");
+  if (element) {
+    element.scrollIntoView({ behavior: "smooth" });
+  }
+};
 
 const goToHomePage = () => router.push("/");
 const goToSignUp = () => router.push("/signup");
