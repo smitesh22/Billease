@@ -15,6 +15,10 @@
 
     <!-- Main Section -->
     <main class="container mx-auto px-8 py-24 flex flex-col items-center text-center">
+      <div v-if="$route.query.message" class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-600 text-white p-4 rounded-lg shadow-lg flex items-center justify-between w-[90%] md:w-[50%] z-50">
+        <span class="text-sm font-medium">{{ $route.query.message }}</span>
+        <button @click="closeMessage" class="ml-4 text-sm font-bold underline hover:opacity-80">Close</button>
+      </div>
       <div class="w-full max-w-4xl flex flex-col items-center">
         <h1 class="text-5xl font-bold mb-8 leading-relaxed">
           Transform Your Receipts into Excel
@@ -25,7 +29,11 @@
           Upload your receipts and invoices, and watch them convert into organized Excel files in seconds.
         </p>
         <div class="flex space-x-6">
-          <button class="bg-black text-white px-8 py-3 rounded-lg text-lg"><a href="/signup">Get Started</a></button>
+          <button
+              class="bg-black text-white px-8 py-3 rounded-lg text-lg"
+              @click="gotToSignUp">Get Started
+          </button>
+
           <button
               class="bg-gray-100 hover:bg-gray-200 px-8 py-3 rounded-lg text-lg"
               @click="scrollToCards"
@@ -66,6 +74,14 @@ const scrollToCards = () => {
     element.scrollIntoView({ behavior: "smooth" });
   }
 };
+
+const gotToSignUp = () => {
+  router.push('/signup')
+}
+
+const closeMessage = () => {
+  router.replace({ path: router.currentRoute.value.path, query: {} });
+}
 
 const scrollToPricing = () => {
   const element = document.getElementById("pricing");
