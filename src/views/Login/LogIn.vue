@@ -46,13 +46,15 @@
 
       <!-- Login Button -->
       <div class="mb-4">
-        <button
-            class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
-            @click="handleSubmit"
-        >
-          Log In
-        </button>
-
+        <div class="mb-4">
+          <button class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300 flex justify-center items-center" @click="handleSubmit" :disabled="isLoading">
+            <span v-if="!isLoading">Log In</span>
+            <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+          </button>
+        </div>
         <!-- Warning & Success Messages -->
         <div v-if="showWarning" aria-live="polite" class="p-4 mt-4 mb-4 text-sm text-yellow-800 bg-yellow-100 rounded-lg" role="alert">
           {{ warning }}
@@ -101,6 +103,7 @@ const userStore = useUserStore();
 const email = ref('');
 const password = ref('');
 const showPassword = ref(false); // Toggle visibility state
+const isLoading = ref(false);
 
 const showWarning = ref(false);
 const showMessage = ref(false);
@@ -135,6 +138,7 @@ const handleSubmit = async () => {
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
   if (isValidEmail) {
     try {
+      isLoading.value = true;
       console.log("Logging in...");
       console.log("API URL:", api.defaults.baseURL);
       const response = await api.post('login', {
@@ -160,6 +164,7 @@ const handleSubmit = async () => {
       console.log("Logged in successfully, token stored in localStorage");
       await router.push("/dashboard");
     } catch (error: unknown) {
+      isLoading.value = false;
       console.error("Error logging in:", error);
       showWarning.value = true;
 

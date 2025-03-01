@@ -48,13 +48,22 @@
 
       <div class="mb-4" v-if="showPassword">
         <label for="password" class="block text-sm font-medium text-gray-700">Password*</label>
-        <input
-            id="password"
-            type="password"
-            placeholder="Password"
-            v-model="password"
-            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500"
-        />
+        <div class="relative">
+          <input
+              id="password"
+              :type="showPasswordField ? 'text' : 'password'"
+              placeholder="Password"
+              class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 pr-10"
+              v-model="password"
+          />
+          <!-- Eye Toggle Button -->
+          <button
+              type="button"
+              class="absolute inset-y-0 right-2 flex items-center px-2"
+              @click="togglePassword"
+          ><img :src="showPasswordField ? hideIcon : showIcon" alt="Toggle Password" class="w-6 h-6 cursor-pointer" />
+          </button>
+        </div>
 
         <div class="space-y-2 mt-4">
           <div class="flex items-center">
@@ -93,11 +102,15 @@
         {{warning}}
       </div>
       <button
-          class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300  font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300"
+          class="w-full bg-purple-600 text-white py-2 rounded-lg disabled:bg-gray-300 font-medium hover:bg-purple-700 focus:outline-none focus:ring focus:ring-purple-300 flex justify-center items-center"
           @click="validateUserData"
-          :disabled="!isPasswordValid && buttonValue === 'Get Code'"
+          :disabled="!isPasswordValid && buttonValue === 'Get Code' || isLoading"
       >
-        {{ buttonValue }}
+        <span v-if="!isLoading">{{ buttonValue }}</span>
+        <svg v-else class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
       </button>
 
       <!-- Login Link -->
@@ -139,6 +152,9 @@ const firstName = ref('')
 const lastName = ref('')
 const buttonValue = ref("Continue");
 
+const showIcon = "/showPassword.svg";
+const hideIcon = "/hidePassword.svg";
+
 const userStore = useUserStore();
 
 const warning = ref("");
@@ -149,6 +165,8 @@ const isPasswordValid = computed(() => {
   return isLowercase.value && isUppercase.value && isDigit.value && isSpecialChar.value && isLengthValid.value;
 });
 const showPassword = ref(false);
+const showPasswordField = ref(false);
+const isLoading = ref(false);
 
 const isLowercase = computed(() => /[a-z]/.test(password.value));
 const isUppercase = computed(() => /[A-Z]/.test(password.value));
@@ -164,6 +182,8 @@ onMounted(() => {
   }
 })
 const validateUserData = async () => {
+  if (isLoading.value) return; // Prevent multiple clicks
+  isLoading.value = true; // Start loading animation
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
   const isValidFirstName = firstName.value && firstName.value.length > 0;
 
@@ -175,6 +195,7 @@ const validateUserData = async () => {
     buttonValue.value = "Get Code";
   } else {
     showWarning.value = true;
+    isLoading.value = false; // Stop loading if validation fails
     if (!isValidEmail) {
       warning.value = "Please enter a valid email address";
     } else {
@@ -209,6 +230,11 @@ const validateUserData = async () => {
       }
     }
   }
+  isLoading.value = false;
+};
+
+const togglePassword = () => {
+  showPasswordField.value = !showPasswordField.value;
 };
 
 </script>

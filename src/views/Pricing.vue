@@ -46,16 +46,28 @@
             <li>✔ Access and manage previous files</li>
           </ul>
           <button
-              class="w-full bg-black text-white text-lg font-medium py-3 mt-6 rounded-xl hover:bg-gray-800"
+              class="w-full bg-black text-white text-lg font-medium py-3 mt-6 rounded-xl hover:bg-gray-800 flex justify-center items-center"
               @click="handleSubmit"
+              :disabled="isLoading"
           >
-            Get Started
+            <svg
+                v-if="isLoading"
+                class="animate-spin h-5 w-5 mr-3 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span v-if="!isLoading">Get Started</span>
+            <span v-else>Loading...</span>
           </button>
         </div>
       </div>
 
       <div v-if="isOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
           <h2 class="text-2xl font-semibold mb-4">Payment Details</h2>
           <div id="payment-element" class="mb-4"></div>
           <div class="flex justify-end items-center mt-4">
@@ -104,6 +116,7 @@ let elements = null;
 const isMonthly = ref(true);
 const isOpen = ref(false);
 const processing = ref(false);
+const isLoading = ref(false);
 
 const switchToMonthly = () => {
   isMonthly.value = true;
@@ -145,11 +158,13 @@ const closeModal = () => {
 
 const handleSubmit = async () => {
   console.log("User isAuthenticated:", user.isAuthenticated);
+  isLoading.value = true;
   if (user.isAuthenticated) {
     await openModal();
   } else {
     await router.push("/login");
   }
+  isLoading.value = false;
 };
 const handlePayment = async () => {
   try {

@@ -105,8 +105,7 @@ const sendMessage = async () => {
       responseType: "blob",
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
     });
-    console.log('processed_image');
-    console.log(response);
+
     chatStore.messages = chatStore.messages.filter(msg => msg.content !== "AI is processing your image...");
 
     const blob = new Blob([response.data], {
