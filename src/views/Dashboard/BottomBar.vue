@@ -54,6 +54,7 @@ import { useUserStore } from "../../store/user";
 const chatStore = useChatStore();
 const userStore = useUserStore();
 import { format } from 'date-fns';
+import {nextTick} from "vue";
 
 const handleFileUpload = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
@@ -95,6 +96,11 @@ const sendMessage = async () => {
     `,
     isHtml: true
   });
+
+  await nextTick();  // Wait for Vue to update the DOM
+  setTimeout(() => {
+    chatStore.uploadedImage = null;
+  }, 500);
 
   const formData = new FormData();
   if (chatStore.uploadedImage) {

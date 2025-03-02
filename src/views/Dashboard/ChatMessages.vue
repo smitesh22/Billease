@@ -78,4 +78,8 @@ onMounted(() => {
 </script>
 
 <style>
+.chat-messages {
+  padding-bottom: 10rem; /* Adjust based on BottomBar height */
+}
+
 </style>
