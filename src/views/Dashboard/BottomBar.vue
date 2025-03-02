@@ -117,9 +117,10 @@ const sendMessage = async () => {
 
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
 
-    const excelFile = new File([response.data], `${uuidv4()}.xlsx`, {
+    const blob = new Blob([response.data], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
+    const excelFile = new File([blob], `${uuidv4()}.xlsx`);
     const excelFormData = new FormData();
     excelFormData.append("file", excelFile);
 
