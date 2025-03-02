@@ -126,7 +126,6 @@ const sendMessage = async () => {
 
     await api.post("/file?type=content-object/excel", excelFormData, {
       headers: {
-        "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${useUserStore().authToken}`
       },
     });
