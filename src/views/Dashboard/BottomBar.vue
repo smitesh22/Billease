@@ -111,24 +111,26 @@ const sendMessage = async () => {
     console.log(fileUploadResponse);
     const contentObjectId = fileUploadResponse.data.contentObject.id;
     const response = await api.get(`/process-image?id=${contentObjectId}`, {
-      responseType: "blob",
+      responseType: "arraybuffer",
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
     });
 
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
 
-    const blob = new Blob([response.data], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    const excelFile = new File([response.data], `${uuidv4()}.xlsx`, {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
-    const fileUrl = window.URL.createObjectURL(blob);
     const excelFormData = new FormData();
-    excelFormData.append("file", blob, `${uuidv4()}.xlsx`);
+    excelFormData.append("file", excelFile);
 
     await api.post("/file?type=content-object/excel", excelFormData, {
       headers: {
+        "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${useUserStore().authToken}`
       },
     });
+    const fileUrl = window.URL.createObjectURL(excelFile);
+
 
     chatStore.addMessage({
       type: "bot",
