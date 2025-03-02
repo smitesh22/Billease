@@ -41,6 +41,7 @@
           </div>
           <ul class="text-gray-600 mt-6 space-y-3">
             <li>✔ Unlimited image uploads</li>
+            <li>✔ Ad free experience</li>
             <li>✔ Excel file conversion</li>
             <li>✔ Intuitive, user-friendly interface</li>
             <li>✔ Access and manage previous files</li>
