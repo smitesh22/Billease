@@ -85,7 +85,16 @@ const sendMessage = async () => {
     userInitials: userStore.getUserInitials,
   });
 
-  chatStore.addMessage({ type: "response", content: "AI is processing your image..." });
+  chatStore.addMessage({
+    type: "response",
+    content: `
+      <div class="flex items-center space-x-2">
+        <div class="animate-spin h-5 w-5 border-4 border-gray-300 border-t-purple-500 rounded-full"></div>
+        <span>LedgeFast is processing your image...</span>
+      </div>
+    `,
+    isHtml: true
+  });
 
   const formData = new FormData();
   if (chatStore.uploadedImage) {
@@ -106,7 +115,7 @@ const sendMessage = async () => {
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
     });
 
-    chatStore.messages = chatStore.messages.filter(msg => msg.content !== "AI is processing your image...");
+    chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
 
     const blob = new Blob([response.data], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -143,7 +152,7 @@ const sendMessage = async () => {
     errorMessage = err.status === 429
         ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
         : errorMessage;
-    chatStore.messages = chatStore.messages.filter(msg => msg.content !== "AI is processing your image...");
+    chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
     chatStore.addMessage({ type: "bot", content: errorMessage });
   } finally {
     chatStore.uploadedImage = null;
