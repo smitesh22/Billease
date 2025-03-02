@@ -111,25 +111,28 @@ const sendMessage = async () => {
     console.log(fileUploadResponse);
     const contentObjectId = fileUploadResponse.data.contentObject.id;
     const response = await api.get(`/process-image?id=${contentObjectId}`, {
-      responseType: "arraybuffer",
+      responseType: "json",
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
     });
 
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
 
-    console.log("✅ Received File, Size:", response.data.byteLength);
-    console.log("📌 Creating Excel File...");
+    // Extract Base64 string from response
+    const base64Data = response.data.file;  // Assuming backend sends { file: "base64string..." }
 
-    // Debug content type
-    console.log("📌 Response Headers:", response.headers);
+// Decode Base64 to binary
+    const binaryData = atob(base64Data);
+    const arrayBuffer = new Uint8Array([...binaryData].map(char => char.charCodeAt(0))).buffer;
 
-    const blob = new Blob([response.data], {
+// Convert to Blob
+    const blob = new Blob([arrayBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     const excelFile = new File([blob], `${uuidv4()}.xlsx`);
 
     console.log("✅ Created File:", excelFile);
 
+// Upload to S3
     const excelFormData = new FormData();
     excelFormData.append("file", excelFile);
 
@@ -142,6 +145,8 @@ const sendMessage = async () => {
     });
 
     console.log("✅ Uploaded Excel File Successfully!");
+
+// Create a download link
     const fileUrl = window.URL.createObjectURL(excelFile);
 
     chatStore.addMessage({
