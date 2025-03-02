@@ -117,21 +117,32 @@ const sendMessage = async () => {
 
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
 
+    console.log("✅ Received File, Size:", response.data.byteLength);
+    console.log("📌 Creating Excel File...");
+
+    // Debug content type
+    console.log("📌 Response Headers:", response.headers);
+
     const blob = new Blob([response.data], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     const excelFile = new File([blob], `${uuidv4()}.xlsx`);
+
+    console.log("✅ Created File:", excelFile);
+
     const excelFormData = new FormData();
     excelFormData.append("file", excelFile);
 
+    console.log("📌 Uploading Excel File to S3...");
     await api.post("/file?type=content-object/excel", excelFormData, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${useUserStore().authToken}`
       },
     });
-    const fileUrl = window.URL.createObjectURL(excelFile);
 
+    console.log("✅ Uploaded Excel File Successfully!");
+    const fileUrl = window.URL.createObjectURL(excelFile);
 
     chatStore.addMessage({
       type: "bot",
