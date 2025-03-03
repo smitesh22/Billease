@@ -1,6 +1,6 @@
 <template>
-  <div class="chat-messages flex flex-col-reverse space-y-4 space-y-reverse mx-auto p-4 rounded-lg bg-gray-50 pb-0 mb-0">
-  <div v-for="(message, index) in chatStore.messages" :key="index"
+  <div ref="chatContainer" class="chat-messages flex flex-col-reverse space-y-4 space-y-reverse mx-auto p-4 rounded-lg bg-gray-50 pb-0 mb-0">
+    <div v-for="(message, index) in chatStore.messages" :key="index"
          class="flex items-start space-x-2 p-6 rounded-lg max-w-sm animate__animated animate__fadeInUp"
          :class="message.type === 'user' || message.type === 'image' ? 'self-end text-right flex-row-reverse' : 'self-start text-left'">
 
@@ -33,18 +33,14 @@
         <!-- Timestamp & User Initials for Text Messages -->
         <div v-if="message.timestamp && message.type !== 'image'" class="mt-1 text-xs flex items-center"
              :class="message.type === 'bot' ? 'text-left justify-start text-gray-500' : 'text-right justify-end text-gray-500'">
-
-          <!-- Bot Message: Timestamp Only (Left) -->
           <span v-if="message.type === 'bot'">{{ message.timestamp }}</span>
 
-          <!-- User Message: Timestamp + Initials (Right) -->
           <div v-else class="flex items-center space-x-1">
             <span>{{ message.timestamp }}</span>
             <div class="flex items-center justify-center w-6 h-6 min-w-[24px] min-h-[24px] rounded-full bg-purple-500 text-white font-bold text-xs shrink-0">
               {{ message.userInitials }}
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -58,10 +54,11 @@
 
 <script setup lang="ts">
 import { useChatStore } from '../../store/chatStore';
-import {computed, onMounted, ref} from 'vue';
+import { computed, onMounted, ref, watch, nextTick } from 'vue';
 
 const chatStore = useChatStore();
 const modalImage = ref<string | null>(null);
+const chatContainer = ref<HTMLElement | null>(null);
 
 const openImageModal = (imageUrl: string) => {
   modalImage.value = imageUrl;
@@ -71,8 +68,23 @@ const closeImageModal = () => {
   modalImage.value = null;
 };
 
+// Scroll to bottom when messages update
+watch(() => chatStore.messages.length, async () => {
+  await nextTick(); // Ensure DOM updates before scrolling
+  if (chatContainer.value) {
+    chatContainer.value.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+});
+
 onMounted(() => {
-})
+  // Initial scroll to bottom on mount
+  if (chatContainer.value) {
+    chatContainer.value.scrollTo({ top: 0, behavior: 'instant' });
+  }
+});
 </script>
 
 <style>
