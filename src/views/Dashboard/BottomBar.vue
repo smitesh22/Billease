@@ -89,9 +89,9 @@ const sendMessage = async () => {
   chatStore.addMessage({
     type: "response",
     content: `
-      <div class="flex items-center space-x-2">
-        <div class="animate-spin h-5 w-5 border-4 border-gray-300 border-t-purple-500 rounded-full"></div>
-        <span>LedgeFast is processing your image...</span>
+      <div class="flex items-center space-x-2 pb-0 mb-0">
+      <div class="animate-spin h-5 w-5 border-4 border-gray-300 border-t-purple-500 rounded-full"></div>
+      <span class="text-sm">LedgeFast is processing your image...</span>
       </div>
     `,
     isHtml: true

@@ -1,6 +1,6 @@
 <template>
-  <div class="chat-messages flex flex-col-reverse space-y-4 space-y-reverse mx-auto p-4 rounded-lg bg-gray-50 h-[calc(70vh-80px)] overflow-y-auto">
-    <div v-for="(message, index) in chatStore.messages" :key="index"
+  <div class="chat-messages flex flex-col-reverse space-y-4 space-y-reverse mx-auto p-4 rounded-lg bg-gray-50 pb-0 mb-0">
+  <div v-for="(message, index) in chatStore.messages" :key="index"
          class="flex items-start space-x-2 p-6 rounded-lg max-w-sm animate__animated animate__fadeInUp"
          :class="message.type === 'user' || message.type === 'image' ? 'self-end text-right flex-row-reverse' : 'self-start text-left'">
 
@@ -79,7 +79,8 @@ onMounted(() => {
 
 <style>
 .chat-messages {
-  padding-bottom: 10rem; /* Adjust based on BottomBar height */
+  height: calc(70vh - 80px); /* Adjust this if needed */
+  overflow-y: auto;
+  justify-content: flex-start;
 }
-
 </style>
