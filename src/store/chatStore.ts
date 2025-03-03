@@ -26,7 +26,9 @@ export const useChatStore = defineStore('chat', () => {
     const fetchMessages = async () => {
         if (!userStore.isAuthenticated) return;
 
-        let storedMessages = JSON.parse(localStorage.getItem("chatMessages") || "[]");
+        let storedMessages: { type: string; content: string; timestamp: string }[] = JSON.parse(
+            localStorage.getItem("chatMessages") || "[]"
+        );
 
         if (userStore.isPrivileged) {
             try {
@@ -44,7 +46,7 @@ export const useChatStore = defineStore('chat', () => {
                             isHtml: contentObject.type === 'content-object/excel'
                         };
 
-                        if (!storedMessages.some(msg => msg.timestamp === newMessage.timestamp)) {
+                        if (!storedMessages.some((msg: { timestamp: string }) => msg.timestamp === newMessage.timestamp)) {
                             storedMessages.unshift(newMessage);
                         }
                     });
@@ -54,8 +56,8 @@ export const useChatStore = defineStore('chat', () => {
             }
         }
 
-        // ✅ Correct check for existing welcome message
-        if (!storedMessages.some(msg => msg.content === welcomeMessage)) {
+        // ✅ Corrected type inference for `msg`
+        if (!storedMessages.some((msg: { content: string }) => msg.content === welcomeMessage)) {
             storedMessages.unshift({
                 type: "bot",
                 content: welcomeMessage,
