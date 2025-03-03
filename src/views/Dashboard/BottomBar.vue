@@ -54,6 +54,7 @@ import { useUserStore } from "../../store/user";
 const chatStore = useChatStore();
 const userStore = useUserStore();
 import { format } from 'date-fns';
+import {nextTick} from "vue";
 
 const handleFileUpload = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
@@ -75,8 +76,10 @@ const removeImage = () => {
 };
 
 const sendMessage = async () => {
-  chatStore.messages = chatStore.messages.filter(msg => msg.content !== welcomeMessage);
+  chatStore.messages = [...chatStore.messages.filter(msg => msg.content !== welcomeMessage)];
+  await nextTick();
   chatStore.loading = true;
+
   chatStore.addMessage({
     type: "image",
     content: chatStore.uploadedImage?.preview ?? "",
@@ -88,13 +91,15 @@ const sendMessage = async () => {
   chatStore.addMessage({
     type: "response",
     content: `
-      <div class="flex items-center space-x-2">
-        <div class="animate-spin h-5 w-5 border-4 border-gray-300 border-t-purple-500 rounded-full"></div>
-        <span>LedgeFast is processing your image...</span>
+      <div class="flex items-center space-x-2 pb-0 mb-0">
+      <div class="animate-spin h-5 w-5 border-4 border-gray-300 border-t-purple-500 rounded-full"></div>
+      <span class="text-sm">LedgeFast is processing your image...</span>
       </div>
     `,
     isHtml: true
   });
+
+  await nextTick();  // Ensure Vue updates before proceeding
 
   const formData = new FormData();
   if (chatStore.uploadedImage) {
@@ -108,27 +113,27 @@ const sendMessage = async () => {
         Authorization: `Bearer ${useUserStore().authToken}`
       },
     });
-    console.log(fileUploadResponse);
+
     const contentObjectId = fileUploadResponse.data.contentObject.id;
     const response = await api.get(`/process-image?id=${contentObjectId}`, {
-      responseType: "blob",
+      responseType: "json",
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
     });
 
+    await nextTick();  // Wait for Vue to process changes
+
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
 
-    const blob = new Blob([response.data], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    });
-    const fileUrl = window.URL.createObjectURL(blob);
-    const excelFormData = new FormData();
-    excelFormData.append("file", blob, `${uuidv4()}.xlsx`);
+    const base64Data = response.data.file;
+    const binaryData = atob(base64Data);
+    const arrayBuffer = new Uint8Array([...binaryData].map(char => char.charCodeAt(0))).buffer;
 
-    await api.post("/file?type=content-object/excel", excelFormData, {
-      headers: {
-        Authorization: `Bearer ${useUserStore().authToken}`
-      },
+    const blob = new Blob([arrayBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
+    const excelFile = new File([blob], `${uuidv4()}.xlsx`);
+
+    const fileUrl = window.URL.createObjectURL(excelFile);
 
     chatStore.addMessage({
       type: "bot",
@@ -142,20 +147,21 @@ const sendMessage = async () => {
         </div>
       `,
       isHtml: true,
-      timestamp : format(new Date(), "yyyy-MM-dd HH:mm")
+      timestamp: format(new Date(), "yyyy-MM-dd HH:mm")
     });
 
   } catch (error) {
     let errorMessage = "❌ Upload failed. Please try again.";
-    const err = error as any;
-    errorMessage = err.status === 429
-        ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
-        : errorMessage;
+    if ((error as any).status === 429) {
+      errorMessage = "You've reached the request limit. Please wait or upgrade for unlimited access.";
+    }
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
     chatStore.addMessage({ type: "bot", content: errorMessage });
   } finally {
-    chatStore.uploadedImage = null;
+    chatStore.setUploadedImage(null);
+    await nextTick();  // Ensure UI updates
     chatStore.loading = false;
   }
 };
+
 </script>
