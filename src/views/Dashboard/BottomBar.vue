@@ -98,9 +98,6 @@ const sendMessage = async () => {
   });
 
   await nextTick();  // Wait for Vue to update the DOM
-  setTimeout(() => {
-    chatStore.uploadedImage = null;
-  }, 500);
 
   const formData = new FormData();
   if (chatStore.uploadedImage) {

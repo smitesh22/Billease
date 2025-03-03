@@ -59,10 +59,8 @@
 <script setup lang="ts">
 import { useChatStore } from '../../store/chatStore';
 import {computed, onMounted, ref} from 'vue';
-import { useUserStore } from "../../store/user";
 
 const chatStore = useChatStore();
-const userStore = useUserStore();
 const modalImage = ref<string | null>(null);
 
 const openImageModal = (imageUrl: string) => {
