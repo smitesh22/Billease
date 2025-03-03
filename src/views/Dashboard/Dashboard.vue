@@ -76,25 +76,30 @@ const adSlotLeft = ref(null);
 const adSlotRight = ref(null);
 const adsLoaded = ref(false);
 
-onMounted(async () => {
+onMounted(() => {
   privilegedUser.value = userStore.isPrivileged;
 
   if (!privilegedUser.value && !adsLoaded.value) {
     adsLoaded.value = true;
 
-    setTimeout(async () => {
-      await nextTick();
-
-      // Ensure Ads Load Properly
+    // Ensure ads load only after the Google script is available
+    if (window.adsbygoogle && Array.isArray(window.adsbygoogle)) {
       [adSlotLeft.value, adSlotRight.value].forEach((ad) => {
-        if (ad && window.adsbygoogle && Array.isArray(window.adsbygoogle)) {
+        if (ad) {
           console.log("Loading Google Ad in:", ad);
           window.adsbygoogle.push({});
-        } else {
-          console.warn("Google Ads script not loaded yet.");
         }
       });
-    }, 1000);
+    } else {
+      console.warn("Google Ads script not loaded yet. Retrying...");
+      setTimeout(() => {
+        [adSlotLeft.value, adSlotRight.value].forEach((ad) => {
+          if (ad && window.adsbygoogle) {
+            window.adsbygoogle.push({});
+          }
+        });
+      }, 2000);
+    }
   }
 });
 
