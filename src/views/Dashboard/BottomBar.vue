@@ -76,7 +76,8 @@ const removeImage = () => {
 };
 
 const sendMessage = async () => {
-  chatStore.messages = chatStore.messages.filter(msg => msg.content !== welcomeMessage);
+  chatStore.messages = [...chatStore.messages.filter(msg => msg.content !== welcomeMessage)];
+  await nextTick();
   chatStore.loading = true;
 
   chatStore.addMessage({
