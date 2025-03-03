@@ -78,6 +78,7 @@ const removeImage = () => {
 const sendMessage = async () => {
   chatStore.messages = chatStore.messages.filter(msg => msg.content !== welcomeMessage);
   chatStore.loading = true;
+
   chatStore.addMessage({
     type: "image",
     content: chatStore.uploadedImage?.preview ?? "",
@@ -97,7 +98,7 @@ const sendMessage = async () => {
     isHtml: true
   });
 
-  await nextTick();  // Wait for Vue to update the DOM
+  await nextTick();  // Ensure Vue updates before proceeding
 
   const formData = new FormData();
   if (chatStore.uploadedImage) {
@@ -111,16 +112,18 @@ const sendMessage = async () => {
         Authorization: `Bearer ${useUserStore().authToken}`
       },
     });
+
     const contentObjectId = fileUploadResponse.data.contentObject.id;
     const response = await api.get(`/process-image?id=${contentObjectId}`, {
       responseType: "json",
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
     });
 
+    await nextTick();  // Wait for Vue to process changes
+
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
 
     const base64Data = response.data.file;
-
     const binaryData = atob(base64Data);
     const arrayBuffer = new Uint8Array([...binaryData].map(char => char.charCodeAt(0))).buffer;
 
@@ -128,16 +131,6 @@ const sendMessage = async () => {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     const excelFile = new File([blob], `${uuidv4()}.xlsx`);
-
-    const excelFormData = new FormData();
-    excelFormData.append("file", excelFile);
-
-    await api.post("/file?type=content-object/excel", excelFormData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${useUserStore().authToken}`
-      },
-    });
 
     const fileUrl = window.URL.createObjectURL(excelFile);
 
@@ -153,21 +146,21 @@ const sendMessage = async () => {
         </div>
       `,
       isHtml: true,
-      timestamp : format(new Date(), "yyyy-MM-dd HH:mm")
+      timestamp: format(new Date(), "yyyy-MM-dd HH:mm")
     });
 
   } catch (error) {
     let errorMessage = "❌ Upload failed. Please try again.";
-    const err = error as any;
-    errorMessage = err.status === 429
-        ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
-        : errorMessage;
+    if ((error as any).status === 429) {
+      errorMessage = "You've reached the request limit. Please wait or upgrade for unlimited access.";
+    }
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
     chatStore.addMessage({ type: "bot", content: errorMessage });
   } finally {
     chatStore.setUploadedImage(null);
-    await nextTick();
+    await nextTick();  // Ensure UI updates
     chatStore.loading = false;
   }
 };
+
 </script>
