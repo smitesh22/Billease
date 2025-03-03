@@ -165,7 +165,8 @@ const sendMessage = async () => {
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
     chatStore.addMessage({ type: "bot", content: errorMessage });
   } finally {
-    chatStore.uploadedImage = null;
+    chatStore.setUploadedImage(null);
+    await nextTick();
     chatStore.loading = false;
   }
 };
