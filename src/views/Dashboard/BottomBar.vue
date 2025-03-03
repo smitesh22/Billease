@@ -4,44 +4,44 @@
         class="absolute bottom-5 left-1/2 transform -translate-x-1/2 w-full max-w-3xl
              bg-purple-50 flex flex-col px-6 py-3 rounded-3xl border border-gray-300 shadow-md">
 
-    <div class="w-full flex flex-col items-start">
+      <div class="w-full flex flex-col items-start">
 
-      <!-- Image Preview Positioned Correctly Above Attach Button at Start -->
-      <div v-if="chatStore.uploadedImage" class="relative w-16 h-16 bg-gray-200 flex items-center justify-center shadow-md border border-gray-300 rounded-lg mb-2">
-        <img :src="chatStore.uploadedImage.preview" alt="Selected Image" class="w-full h-full object-cover rounded-lg" />
-        <button class="absolute top-0 right-0 transform translate-x-2 -translate-y-2 bg-red-300 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-400 text-xs" @click="removeImage" :disabled="chatStore.loading">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="w-full flex items-center justify-between">
-        <!-- Attach & Camera Buttons -->
-        <div class="flex items-center space-x-3 ml-0">
-          <!-- Attach Button -->
-          <input type="file" accept="image/*" id="file-upload-attach" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
-          <label for="file-upload-attach" class="flex items-center space-x-2 px-5 py-3 text-white bg-purple-500 hover:bg-purple-600 rounded-2xl shadow transition duration-200 cursor-pointer">
-            <i class="fa-solid fa-paperclip text-lg"></i>
-            <span class="font-medium text-lg">Attach</span>
-          </label>
-
-          <!-- Camera Button -->
-          <input type="file" accept="image/*" id="file-upload-camera" capture="environment" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
-          <label for="file-upload-camera" class="flex items-center justify-center bg-purple-500 hover:bg-purple-600 text-white rounded-2xl w-14 h-14 cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300">
-            <i class="fa-solid fa-camera text-lg"></i>
-          </label>
+        <!-- Image Preview Positioned Correctly Above Attach Button at Start -->
+        <div v-if="chatStore.uploadedImage" class="relative w-16 h-16 bg-gray-200 flex items-center justify-center shadow-md border border-gray-300 rounded-lg mb-2">
+          <img :src="chatStore.uploadedImage.preview" alt="Selected Image" class="w-full h-full object-cover rounded-lg" />
+          <button class="absolute top-0 right-0 transform translate-x-2 -translate-y-2 bg-red-300 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-400 text-xs" @click="removeImage" :disabled="chatStore.loading">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
 
-        <!-- Fixed Position Generate Button -->
-        <button class="px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-2xl text-white font-semibold text-lg shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                type="button"
-                aria-label="Send Message"
-                :disabled="!chatStore.uploadedImage || chatStore.loading"
-                @click="sendMessage">
-          Generate!
-        </button>
+        <div class="w-full flex items-center justify-between">
+          <!-- Attach & Camera Buttons -->
+          <div class="flex items-center space-x-3 ml-0">
+            <!-- Attach Button -->
+            <input type="file" accept="image/*" id="file-upload-attach" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
+            <label for="file-upload-attach" class="flex items-center space-x-2 px-5 py-3 text-white bg-purple-500 hover:bg-purple-600 rounded-2xl shadow transition duration-200 cursor-pointer">
+              <i class="fa-solid fa-paperclip text-lg"></i>
+              <span class="font-medium text-lg">Attach</span>
+            </label>
+
+            <!-- Camera Button -->
+            <input type="file" accept="image/*" id="file-upload-camera" capture="environment" class="hidden" @change="handleFileUpload" :disabled="chatStore.loading" />
+            <label for="file-upload-camera" class="flex items-center justify-center bg-purple-500 hover:bg-purple-600 text-white rounded-2xl w-14 h-14 cursor-pointer transition-transform transform hover:scale-110 focus:ring-2 focus:ring-purple-300">
+              <i class="fa-solid fa-camera text-lg"></i>
+            </label>
+          </div>
+
+          <!-- Fixed Position Generate Button -->
+          <button class="px-6 py-3 bg-purple-500 hover:bg-purple-600 rounded-2xl text-white font-semibold text-lg shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="button"
+                  aria-label="Send Message"
+                  :disabled="!chatStore.uploadedImage || chatStore.loading"
+                  @click="sendMessage">
+            Generate!
+          </button>
+        </div>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
@@ -76,10 +76,8 @@ const removeImage = () => {
 };
 
 const sendMessage = async () => {
-  chatStore.messages = [...chatStore.messages.filter(msg => msg.content !== welcomeMessage)];
-  await nextTick();
+  chatStore.messages = chatStore.messages.filter(msg => msg.content !== welcomeMessage);
   chatStore.loading = true;
-
   chatStore.addMessage({
     type: "image",
     content: chatStore.uploadedImage?.preview ?? "",
@@ -99,7 +97,7 @@ const sendMessage = async () => {
     isHtml: true
   });
 
-  await nextTick();  // Ensure Vue updates before proceeding
+  await nextTick();  // Wait for Vue to update the DOM
 
   const formData = new FormData();
   if (chatStore.uploadedImage) {
@@ -113,18 +111,16 @@ const sendMessage = async () => {
         Authorization: `Bearer ${useUserStore().authToken}`
       },
     });
-
     const contentObjectId = fileUploadResponse.data.contentObject.id;
     const response = await api.get(`/process-image?id=${contentObjectId}`, {
       responseType: "json",
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
     });
 
-    await nextTick();  // Wait for Vue to process changes
-
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
 
     const base64Data = response.data.file;
+
     const binaryData = atob(base64Data);
     const arrayBuffer = new Uint8Array([...binaryData].map(char => char.charCodeAt(0))).buffer;
 
@@ -132,6 +128,16 @@ const sendMessage = async () => {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     const excelFile = new File([blob], `${uuidv4()}.xlsx`);
+
+    const excelFormData = new FormData();
+    excelFormData.append("file", excelFile);
+
+    await api.post("/file?type=content-object/excel", excelFormData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${useUserStore().authToken}`
+      },
+    });
 
     const fileUrl = window.URL.createObjectURL(excelFile);
 
@@ -147,21 +153,21 @@ const sendMessage = async () => {
         </div>
       `,
       isHtml: true,
-      timestamp: format(new Date(), "yyyy-MM-dd HH:mm")
+      timestamp : format(new Date(), "yyyy-MM-dd HH:mm")
     });
 
   } catch (error) {
     let errorMessage = "❌ Upload failed. Please try again.";
-    if ((error as any).status === 429) {
-      errorMessage = "You've reached the request limit. Please wait or upgrade for unlimited access.";
-    }
+    const err = error as any;
+    errorMessage = err.status === 429
+        ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
+        : errorMessage;
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
     chatStore.addMessage({ type: "bot", content: errorMessage });
   } finally {
     chatStore.setUploadedImage(null);
-    await nextTick();  // Ensure UI updates
+    await nextTick();
     chatStore.loading = false;
   }
 };
-
 </script>
