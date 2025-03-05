@@ -59,7 +59,7 @@ import Pricing from "./Pricing.vue";
 import Cards from "./Cards.vue";
 import { onMounted } from "vue";
 import { useUserStore } from "../store/user";
-import {API_URL, STRIPE_PRICEID_MONTHLY, STRIPE_PRICEID_YEARLY, STRIPE_PUBLISHABLE_KEY} from "../secrets/secrets.js";
+import {API_URL, STRIPE_PRICEID_MONTHLY, STRIPE_PRICEID_YEARLY, STRIPE_PUBLISHABLE_KEY} from "../secrets/secrets";
 
 const router = useRouter();
 const user = useUserStore();
