@@ -1,4 +1,4 @@
-name: Deploy Vue App to S3 and Invalidate CloudFront
+name: Deploy Vue App to Production
 
 on:
   push:
