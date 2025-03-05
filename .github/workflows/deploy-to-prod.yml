@@ -23,7 +23,7 @@ jobs:
           npm install
 
       - name: Create .env file from secret production
-        run: echo "${{ secrets.ENV_PRODUCTION }}" > .env.development
+        run: echo "${{ secrets.ENV_PRODUCTION }}" > .env
 
       - name: Build Vue App
         run: |
