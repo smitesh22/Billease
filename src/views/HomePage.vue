@@ -68,10 +68,6 @@ onMounted(() => {
   if (user.isAuthenticated) {
     router.push("/dashboard");
   }
-  console.log(API_URL);
-  console.log(STRIPE_PRICEID_YEARLY);
-  console.log(STRIPE_PRICEID_MONTHLY);
-  console.log(STRIPE_PUBLISHABLE_KEY);
 });
 const scrollToCards = () => {
   const element = document.getElementById("cards");
