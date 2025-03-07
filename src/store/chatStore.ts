@@ -40,13 +40,22 @@ export const useChatStore = defineStore('chat', () => {
                     response.data.forEach(contentObject => {
                         const newMessage = {
                             type: contentObject.type === 'content-object/excel' ? 'bot' : 'image',
-                            content: contentObject.extensions["content-object-extension/location"],
+                            content: contentObject.type === 'content-object/image' ?
+                                contentObject.extensions["content-object-extension/location"] :
+                                `
+                                    <div class="flex flex-col items-start space-y-2 p-3 rounded-lg">
+                                      <p>📂 Your processed Excel file is ready for download:</p>
+                                      <a href="${contentObject.extensions["content-object-extension/location"]}" download="${contentObject.id}.xlsx"
+                                         class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition flex items-center space-x-2">
+                                        <span>Download Excel File</span>
+                                      </a>
+                                    </div>
+                                `,
                             timestamp: format(new Date(contentObject.createdOn), "yyyy-MM-dd HH:mm"),
                             userInitials: userStore.getUserInitials,
                             isHtml: contentObject.type === 'content-object/excel'
                         };
-
-                        if (!storedMessages.some((msg: { timestamp: string }) => msg.timestamp === newMessage.timestamp)) {
+                        if (!storedMessages.some((msg: { content: string }) => msg.content === newMessage.content)) {
                             storedMessages.unshift(newMessage);
                         }
                     });
@@ -73,10 +82,6 @@ export const useChatStore = defineStore('chat', () => {
         messages.value = [];
         localStorage.removeItem("chatMessages");
     };
-
-    onMounted(() => {
-        fetchMessages().catch(error => console.error("Error in onMounted fetchMessages:", error));
-    });
 
     watch(() => userStore.isAuthenticated, (isAuthenticated) => {
         if (!isAuthenticated) {
