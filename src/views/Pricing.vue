@@ -30,8 +30,23 @@
       </div>
 
       <div class="flex flex-col md:flex-row justify-center gap-8">
+        <div class="bg-white shadow-lg rounded-lg p-8 w-full md:w-1/3 border border-gray-300">
+          <h3 class="text-2xl font-semibold text-gray-800">Free Plan</h3>
+          <div class="text-4xl font-bold text-gray-900 mt-6">€0
+            <span class="text-xl font-medium text-gray-500">/mo</span>
+          </div>
+          <ul class="text-gray-600 mt-6 space-y-3">
+            <li>✔ 3 receipts per day</li>
+            <li>✔ Excel file conversion</li>
+            <li>✔ Intuitive, user-friendly experience</li>
+            <li>✖ No ad-free experience</li>
+          </ul>
+          <button class="w-full bg-gray-400 text-white text-lg font-medium py-3 mt-6 rounded-xl cursor-not-allowed">
+            Free Plan Active
+          </button>
+        </div>
         <div class="bg-white shadow-lg rounded-lg p-8 w-full md:w-1/3">
-          <h3 class="text-2xl font-semibold text-gray-800">Basic Plan</h3>
+          <h3 class="text-2xl font-semibold text-gray-800">Pro Plan</h3>
           <div class="text-4xl font-bold text-gray-900 mt-6">
             <span>{{ isMonthly ? '€4.99' : '€49.99' }}</span>
             <span class="text-xl font-medium text-gray-500">/{{ isMonthly ? 'mo' : 'yr' }}</span>

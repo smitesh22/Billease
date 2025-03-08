@@ -76,7 +76,8 @@ const removeImage = () => {
 };
 
 const sendMessage = async () => {
-  chatStore.messages = chatStore.messages.filter(msg => msg.content !== welcomeMessage);
+
+  chatStore.messages = [...chatStore.messages.filter(msg => msg.content !== welcomeMessage)];
   chatStore.loading = true;
   chatStore.addMessage({
     type: "image",
@@ -89,15 +90,37 @@ const sendMessage = async () => {
   chatStore.addMessage({
     type: "response",
     content: `
-      <div class="flex items-center space-x-2 pb-0 mb-0">
-      <div class="animate-spin h-5 w-5 border-4 border-gray-300 border-t-purple-500 rounded-full"></div>
-      <span class="text-sm">LedgeFast is processing your image...</span>
-      </div>
+   <div class="flex flex-col items-start space-y-1">
+  <div class="flex items-center space-x-1">
+    <span class="dot"></span>
+    <span class="dot delay-200"></span>
+    <span class="dot delay-400"></span>
+  </div>
+  <span class="text-sm text-gray-700">LedgeFast is processing your image...</span>
+</div>
+
+<style>
+  @keyframes bounceCustom {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-6px); }
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    background-color: #8b5cf6; /* Purple-500 */
+    border-radius: 50%;
+    animation: bounceCustom 1.2s infinite;
+  }
+
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-400 { animation-delay: 0.4s; }
+</style>
+
+
     `,
     isHtml: true
   });
-
-  await nextTick();  // Wait for Vue to update the DOM
 
   const formData = new FormData();
   if (chatStore.uploadedImage) {
@@ -132,14 +155,14 @@ const sendMessage = async () => {
     const excelFormData = new FormData();
     excelFormData.append("file", excelFile);
 
-    await api.post("/file?type=content-object/excel", excelFormData, {
+    const res = await api.post("/file?type=content-object/excel", excelFormData, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${useUserStore().authToken}`
       },
     });
 
-    const fileUrl = window.URL.createObjectURL(excelFile);
+    const fileUrl = res.data.contentObject.extensions['content-object-extension/location'];
 
     chatStore.addMessage({
       type: "bot",
