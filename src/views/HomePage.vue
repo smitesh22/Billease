@@ -7,9 +7,9 @@
         <img src="/logo.svg" alt="Logo" class="h-10">
       </div>
       <div class="flex items-center space-x-4">
-        <div class="text-gray-500"><button @click=scrollToPricing class="text-gray-500 hover:underline">Pricing</button></div>
-        <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl text-gray-800" @click="goToLogIn">Log In</button>
-        <button class="bg-purple-600 text-white px-4 py-2 rounded-xl" @click="goToSignUp">Sign Up</button>
+        <div class="text-gray-500"><button @click=scrollToPricing class="text-gray-500 font-semibold hover:underline">Pricing</button></div>
+        <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl font-semibold text-gray-800" @click="goToLogIn">Log In</button>
+        <button class="bg-purple-600 text-white px-4 py-2 font-semibold rounded-xl" @click="goToSignUp">Sign Up</button>
       </div>
     </div>
 
