@@ -41,6 +41,14 @@
             Learn More
           </button>
         </div>
+        <br>
+        <div>
+          <a href="https://www.producthunt.com/posts/ledgefast" target="_blank"
+             class="bg-gray-100 hover:bg-gray-200 px-8 py-3 rounded-lg text-lg font-semibold flex items-center justify-center space-x-3 transition-transform transform hover:scale-105 shadow-md">
+            <img src="/producthunt.svg" alt="Product Hunt" class="h-6">
+            <span>Find us on Product Hunt!</span>
+          </a>
+        </div>
       </div>
 
       <!-- Cards-->
