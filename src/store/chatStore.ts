@@ -37,6 +37,7 @@ export const useChatStore = defineStore('chat', () => {
                 });
 
                 if (response.data && Array.isArray(response.data)) {
+
                     response.data.forEach(contentObject => {
                         const newMessage = {
                             type: contentObject.type === 'content-object/excel' ? 'bot' : 'image',

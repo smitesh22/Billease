@@ -1,8 +1,8 @@
 <template>
-  <div ref="chatContainer" class="chat-messages flex flex-col mx-auto p-4 rounded-lg bg-gray-50 pb-0 mb-0">
-    <div v-for="(message, index) in reversedMessages" :key="index"
+  <div ref="chatContainer" class="chat-messages flex flex-col-reverse space-y-4 space-y-reverse mx-auto p-4 rounded-lg bg-gray-50 pb-0 mb-0">
+    <div v-for="(message, index) in chatStore.messages" :key="index"
          class="flex items-start space-x-2 p-6 rounded-lg max-w-sm animate__animated animate__fadeInUp"
-         :class="message.type === 'user' || message.type === 'image' ? 'ml-auto text-right flex-row-reverse' : 'mr-auto text-left'">
+         :class="message.type === 'user' || message.type === 'image' ? 'self-end text-right flex-row-reverse' : 'self-start text-left'">
 
       <!-- Chatbot Logo (for bot messages) -->
       <img v-if="message.type === 'bot'"
@@ -27,7 +27,7 @@
             </div>
           </div>
         </div>
-        <div v-else-if="message.isHtml" class="html-message" v-html="message.content"></div>
+        <div v-else-if="message.isHtml" v-html="message.content"></div>
         <div v-else>{{ message.content }}</div>
 
         <!-- Timestamp & User Initials for Text Messages -->
@@ -60,8 +60,6 @@ const chatStore = useChatStore();
 const modalImage = ref<string | null>(null);
 const chatContainer = ref<HTMLElement | null>(null);
 
-const reversedMessages = computed(() => [...chatStore.messages].reverse());
-
 const openImageModal = (imageUrl: string) => {
   modalImage.value = imageUrl;
 };
@@ -73,17 +71,15 @@ const closeImageModal = () => {
 // Scroll to bottom when messages update
 watch(() => chatStore.messages.length, async () => {
   await nextTick();
-  setTimeout(() => {
-    if (chatContainer.value) {
-      chatContainer.value.scrollTo({ top: chatContainer.value.scrollHeight, behavior: "smooth" });
-    }
-  }, 10);
+  if (chatContainer.value) {
+    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+  }
 });
 
 onMounted(() => {
   // Initial scroll to bottom on mount
   if (chatContainer.value) {
-    chatContainer.value.scrollTo({ top: chatContainer.value.scrollHeight, behavior: 'instant' });
+    chatContainer.value.scrollTo({ top: 0, behavior: 'instant' });
   }
 });
 </script>
@@ -93,10 +89,5 @@ onMounted(() => {
   height: calc(70vh - 80px); /* Adjust this if needed */
   overflow-y: auto;
   justify-content: flex-start;
-}
-
-.html-message {
-  display: block;
-  width: 100%;
 }
 </style>
