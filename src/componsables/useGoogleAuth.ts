@@ -1,6 +1,8 @@
 import { useRouter } from "vue-router";
 import api from "../api/index";
 import { useUserStore } from "../store/user";
+import {useChatStore, welcomeMessage} from "../store/chatStore";
+import {format} from "date-fns";
 
 export function useGoogleAuth() {
     const router = useRouter();
@@ -41,6 +43,11 @@ export function useGoogleAuth() {
 
                 // Ensure we clean up event listener after receiving the message
                 window.removeEventListener("message", handleAuthMessage);
+                useChatStore().addMessage({
+                    type: "bot",
+                    content: welcomeMessage,
+                    timestamp: format(new Date().toISOString(), "yyyy-MM-dd HH:mm")
+                });
                 router.push("/dashboard");
                 window.focus();
             } else {

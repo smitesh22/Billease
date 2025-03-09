@@ -98,6 +98,7 @@ import { useUserStore } from "../../store/user";
 import { AxiosError } from "axios";
 import {useGoogleAuth} from "../../componsables/useGoogleAuth";
 import {useChatStore, welcomeMessage} from "../../store/chatStore";
+import {format} from "date-fns";
 const { signInWithGoogle } = useGoogleAuth();
 
 const userStore = useUserStore();
@@ -130,11 +131,13 @@ onMounted(() => {
   }
 
   if (localStorage.authToken) {
-    useChatStore().addMessage({
-      type: "bot",
-      content: welcomeMessage,
-      timestamp: new Date().toISOString()
-    });
+    if(!useChatStore().messages.some(msg => msg.content === welcomeMessage)) {
+      useChatStore().addMessage({
+        type: "bot",
+        content: welcomeMessage,
+        timestamp: format(new Date().toISOString(), "yyyy-MM-dd HH:mm")
+      });
+    }
     router.push('/dashboard');
   }
 });
