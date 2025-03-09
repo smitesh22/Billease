@@ -55,6 +55,7 @@ const chatStore = useChatStore();
 const userStore = useUserStore();
 import { format } from 'date-fns';
 import {nextTick} from "vue";
+import {ENV} from "../../secrets/secrets";
 
 const handleFileUpload = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
@@ -79,17 +80,43 @@ const sendMessage = async () => {
 
   chatStore.messages = [...chatStore.messages.filter(msg => msg.content !== welcomeMessage)];
   chatStore.loading = true;
-  chatStore.addMessage({
-    type: "image",
-    content: chatStore.uploadedImage?.preview ?? "",
-    isHtml: true,
-    timestamp: format(new Date(), "yyyy-MM-dd HH:mm"),
-    userInitials: userStore.getUserInitials,
-  });
 
-  chatStore.addMessage({
-    type: "response",
-    content: `
+  const formData = new FormData();
+  if (chatStore.uploadedImage) {
+    formData.append("file", chatStore.uploadedImage.file);
+  }
+
+  try {
+    const fileUploadResponse = await api.post("/file", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${useUserStore().authToken}`
+      },
+    });
+    const contentObject = fileUploadResponse.data.contentObject;
+    const contentObjectId = contentObject.id;
+
+    let imageURL;
+
+    if(ENV === 'LOCAL' || ENV === 'DEV'){
+      console.log('ENV');
+      console.log(ENV);
+      imageURL = contentObject.extensions["content-object-extension/location"].replace("https://dev-narath-muni.s3.eu-west-1.amazonaws.com/", "https://dev-bucket.ledgefast.com/");
+    }else {
+      imageURL = contentObject.extensions["content-object-extension/location"].replace("https://prod-narath-muni.s3.eu-west-1.amazonaws.com/", "https://prod-bucket.ledgefast.com/");
+    }
+    console.log(imageURL);
+    chatStore.addMessage({
+      type: "image",
+      content: imageURL,
+      isHtml: true,
+      timestamp: format(new Date(), "yyyy-MM-dd HH:mm"),
+      userInitials: userStore.getUserInitials,
+    });
+
+    chatStore.addMessage({
+      type: "response",
+      content: `
    <div class="flex flex-col items-start space-y-1">
   <div class="flex items-center space-x-1">
     <span class="dot"></span>
@@ -119,22 +146,9 @@ const sendMessage = async () => {
 
 
     `,
-    isHtml: true
-  });
-
-  const formData = new FormData();
-  if (chatStore.uploadedImage) {
-    formData.append("file", chatStore.uploadedImage.file);
-  }
-
-  try {
-    const fileUploadResponse = await api.post("/file", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${useUserStore().authToken}`
-      },
+      isHtml: true
     });
-    const contentObjectId = fileUploadResponse.data.contentObject.id;
+
     const response = await api.get(`/process-image?id=${contentObjectId}`, {
       responseType: "json",
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
