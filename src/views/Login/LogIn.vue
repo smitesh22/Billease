@@ -97,6 +97,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "../../store/user";
 import { AxiosError } from "axios";
 import {useGoogleAuth} from "../../componsables/useGoogleAuth";
+import {useChatStore, welcomeMessage} from "../../store/chatStore";
 const { signInWithGoogle } = useGoogleAuth();
 
 const userStore = useUserStore();
@@ -129,6 +130,11 @@ onMounted(() => {
   }
 
   if (localStorage.authToken) {
+    useChatStore().addMessage({
+      type: "bot",
+      content: welcomeMessage,
+      timestamp: new Date().toISOString()
+    });
     router.push('/dashboard');
   }
 });
