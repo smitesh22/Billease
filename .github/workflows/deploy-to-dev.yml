@@ -22,10 +22,13 @@ jobs:
         run: npm install
 
       - name: Create .env from secret
+        run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env.development
+
+      - name: Create .env from secret
         run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env
 
       - name: Verify .env file
-        run: cat .env
+        run: cat .env.development
 
       - name: Build Vue App (Development Mode)
         run: npm run build -- --mode development
