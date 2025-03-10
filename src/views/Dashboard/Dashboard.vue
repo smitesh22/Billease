@@ -103,7 +103,6 @@ onMounted(() => {
   }
 });
 
-
 const mainClasses = computed(() => {
   return privilegedUser.value
       ? "container mx-auto px-4 sm:px-8 lg:px-16 py-8 justify-center w-full"
