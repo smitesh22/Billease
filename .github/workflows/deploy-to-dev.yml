@@ -21,9 +21,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Create .env .development file from secret
-        run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env.development
-
       - name: Create .env from secret
         run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env
 

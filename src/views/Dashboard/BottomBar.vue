@@ -99,8 +99,6 @@ const sendMessage = async () => {
     let imageURL;
 
     if(ENV === 'LOCAL' || ENV === 'DEV'){
-      console.log('ENV');
-      console.log(ENV);
       imageURL = contentObject.extensions["content-object-extension/location"].replace("https://dev-narath-muni.s3.eu-west-1.amazonaws.com/", "https://dev-bucket.ledgefast.com/");
     }else {
       imageURL = contentObject.extensions["content-object-extension/location"].replace("https://prod-narath-muni.s3.eu-west-1.amazonaws.com/", "https://prod-bucket.ledgefast.com/");
@@ -196,7 +194,7 @@ const sendMessage = async () => {
   } catch (error) {
     let errorMessage = "❌ Upload failed. Please try again.";
     const err = error as any;
-    errorMessage = err.status === 429
+    errorMessage = err.status === 429 || err.status === 500
         ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
         : errorMessage;
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
