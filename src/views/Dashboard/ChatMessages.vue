@@ -15,7 +15,7 @@
           <img
               :src="message.content"
               alt="User uploaded image"
-              class="rounded-lg max-w-full cursor-pointer transition-transform transform hover:scale-105"
+              class="fade-in rounded-lg max-w-full cursor-pointer transition-transform transform hover:scale-105"
               @click="openImageModal(message.content)"
           />
 

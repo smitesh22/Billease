@@ -78,6 +78,27 @@ const removeImage = () => {
 
 const sendMessage = async () => {
 
+  chatStore.addMessage({
+    type: "bot",
+    content: `
+      <div class="fade-in flex flex-col items-start space-y-2 p-3 rounded-lg">
+        <p>Uploading your image...<div class="loader"></div></p>
+
+      </div>
+      <style>
+        .fade-in { opacity: 0; animation: fadeIn 0.5s forwards; }
+        .loader {
+          width: 24px; height: 24px; border: 3px solid #8b5cf6;
+          border-top: 3px solid transparent; border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+      </style>
+    `,
+    isHtml: true,
+  });
+
   chatStore.messages = [...chatStore.messages.filter(msg => msg.content !== welcomeMessage)];
   chatStore.loading = true;
 
@@ -103,7 +124,8 @@ const sendMessage = async () => {
     }else {
       imageURL = contentObject.extensions["content-object-extension/location"].replace("https://prod-narath-muni.s3.eu-west-1.amazonaws.com/", "https://prod-bucket.ledgefast.com/");
     }
-    console.log(imageURL);
+
+    chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("Uploading your image..."));
     chatStore.addMessage({
       type: "image",
       content: imageURL,
