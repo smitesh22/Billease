@@ -25,7 +25,7 @@ jobs:
         run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env
 
       - name: Verify .env file
-        run: cat .env.development
+        run: cat .env
 
       - name: Build Vue App (Development Mode)
         run: npm run build -- --mode development
