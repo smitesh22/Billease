@@ -55,6 +55,7 @@ const chatStore = useChatStore();
 const userStore = useUserStore();
 import { format } from 'date-fns';
 import {nextTick} from "vue";
+import {ENV} from "../../secrets/secrets";
 
 const handleFileUpload = (event: Event) => {
   const files = (event.target as HTMLInputElement).files;
@@ -77,19 +78,65 @@ const removeImage = () => {
 
 const sendMessage = async () => {
 
-  chatStore.messages = [...chatStore.messages.filter(msg => msg.content !== welcomeMessage)];
-  chatStore.loading = true;
   chatStore.addMessage({
-    type: "image",
-    content: chatStore.uploadedImage?.preview ?? "",
+    type: "bot",
+    content: `
+      <div class="fade-in flex flex-col items-start space-y-2 p-3 rounded-lg">
+        <p>Uploading your image...<div class="loader"></div></p>
+
+      </div>
+      <style>
+        .fade-in { opacity: 0; animation: fadeIn 0.5s forwards; }
+        .loader {
+          width: 24px; height: 24px; border: 3px solid #8b5cf6;
+          border-top: 3px solid transparent; border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+      </style>
+    `,
     isHtml: true,
-    timestamp: format(new Date(), "yyyy-MM-dd HH:mm"),
-    userInitials: userStore.getUserInitials,
   });
 
-  chatStore.addMessage({
-    type: "response",
-    content: `
+  chatStore.messages = [...chatStore.messages.filter(msg => msg.content !== welcomeMessage)];
+  chatStore.loading = true;
+
+  const formData = new FormData();
+  if (chatStore.uploadedImage) {
+    formData.append("file", chatStore.uploadedImage.file);
+  }
+
+  try {
+    const fileUploadResponse = await api.post("/file", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${useUserStore().authToken}`
+      },
+    });
+    const contentObject = fileUploadResponse.data.contentObject;
+    const contentObjectId = contentObject.id;
+
+    let imageURL;
+
+    if(ENV === 'LOCAL' || ENV === 'DEV'){
+      imageURL = contentObject.extensions["content-object-extension/location"].replace("https://dev-narath-muni.s3.eu-west-1.amazonaws.com/", "https://dev-bucket.ledgefast.com/");
+    }else {
+      imageURL = contentObject.extensions["content-object-extension/location"].replace("https://prod-narath-muni.s3.eu-west-1.amazonaws.com/", "https://prod-bucket.ledgefast.com/");
+    }
+
+    chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("Uploading your image..."));
+    chatStore.addMessage({
+      type: "image",
+      content: imageURL,
+      isHtml: true,
+      timestamp: format(new Date(), "yyyy-MM-dd HH:mm"),
+      userInitials: userStore.getUserInitials,
+    });
+
+    chatStore.addMessage({
+      type: "response",
+      content: `
    <div class="flex flex-col items-start space-y-1">
   <div class="flex items-center space-x-1">
     <span class="dot"></span>
@@ -119,22 +166,9 @@ const sendMessage = async () => {
 
 
     `,
-    isHtml: true
-  });
-
-  const formData = new FormData();
-  if (chatStore.uploadedImage) {
-    formData.append("file", chatStore.uploadedImage.file);
-  }
-
-  try {
-    const fileUploadResponse = await api.post("/file", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${useUserStore().authToken}`
-      },
+      isHtml: true
     });
-    const contentObjectId = fileUploadResponse.data.contentObject.id;
+
     const response = await api.get(`/process-image?id=${contentObjectId}`, {
       responseType: "json",
       headers: { Authorization: `Bearer ${useUserStore().authToken}` }
@@ -182,7 +216,7 @@ const sendMessage = async () => {
   } catch (error) {
     let errorMessage = "❌ Upload failed. Please try again.";
     const err = error as any;
-    errorMessage = err.status === 429
+    errorMessage = err.status === 429 || err.status === 500
         ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
         : errorMessage;
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));

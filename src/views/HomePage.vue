@@ -7,9 +7,9 @@
         <img src="/logo.svg" alt="Logo" class="h-10">
       </div>
       <div class="flex items-center space-x-4">
-        <div class="text-gray-500"><button @click=scrollToPricing class="text-gray-500 hover:underline">Pricing</button></div>
-        <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl text-gray-800" @click="goToLogIn">Log In</button>
-        <button class="bg-purple-600 text-white px-4 py-2 rounded-xl" @click="goToSignUp">Sign Up</button>
+        <div class="text-gray-500"><button @click=scrollToPricing class="text-gray-500 font-semibold hover:underline">Pricing</button></div>
+        <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-xl font-semibold text-gray-800 transition-transform transform hover:scale-105" @click="goToLogIn">Log In</button>
+        <button class="bg-purple-600 text-white px-4 py-2 font-semibold rounded-xl transition-transform transform hover:scale-105" @click="goToSignUp">Sign Up</button>
       </div>
     </div>
 
@@ -30,16 +30,23 @@
         </p>
         <div class="flex space-x-6">
           <button
-              class="bg-black text-white px-8 py-3 rounded-lg text-lg"
+              class="bg-black text-white px-8 py-3 rounded-lg text-lg transition-transform transform hover:scale-105 shadow-md"
               @click="gotToSignUp">Get Started
           </button>
 
           <button
-              class="bg-gray-100 hover:bg-gray-200 px-8 py-3 rounded-lg text-lg"
+              class="bg-gray-100 hover:bg-gray-200 px-8 py-3 rounded-lg text-lg transition-transform transform hover:scale-105 shadow-md"
               @click="scrollToCards"
           >
             Learn More
           </button>
+        </div>
+        <div class="mt-7">
+          <a href="https://www.producthunt.com/posts/ledgefast" target="_blank"
+             class="bg-gray-100 hover:bg-gray-200 px-8 py-3 rounded-lg text-lg font-semibold flex items-center justify-center space-x-3 transition-transform transform hover:scale-105 shadow-md">
+            <img src="/producthunt.svg" alt="Product Hunt" class="h-6">
+            <span>Find us on Product Hunt!</span>
+          </a>
         </div>
       </div>
 
