@@ -220,9 +220,12 @@ const sendMessage = async () => {
         ? "You've reached the request limit. Please consider upgrading to the paid version for unlimited access, or wait for the limit to reset. Thank you for your patience!"
         : errorMessage;
     chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
+    chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("Uploading your image..."));
     chatStore.addMessage({ type: "bot", content: errorMessage });
   } finally {
     chatStore.setUploadedImage(null);
+    chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("LedgeFast is processing your image..."));
+    chatStore.messages = chatStore.messages.filter(msg => !msg.content.includes("Uploading your image..."));
     await nextTick();
     chatStore.loading = false;
   }
