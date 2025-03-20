@@ -32,7 +32,7 @@
       <div class="flex flex-col md:flex-row justify-center gap-8">
         <div class="bg-white shadow-lg rounded-lg p-8 w-full md:w-1/3 border border-gray-300">
           <h3 class="text-2xl font-semibold text-gray-800">Free Plan</h3>
-          <div class="text-4xl font-bold text-gray-900 mt-6">$0
+          <div class="text-4xl font-bold text-gray-900 mt-6">€0
             <span class="text-xl font-medium text-gray-500">/mo</span>
           </div>
           <ul class="text-gray-600 mt-6 space-y-3">
@@ -48,7 +48,7 @@
         <div class="bg-white shadow-lg rounded-lg p-8 w-full md:w-1/3">
           <h3 class="text-2xl font-semibold text-gray-800">Pro Plan</h3>
           <div class="text-4xl font-bold text-gray-900 mt-6">
-            <span>{{ isMonthly ? '$4.99' : '$49.99' }}</span>
+            <span>{{ isMonthly ? '€4.99' : '€49.99' }}</span>
             <span class="text-xl font-medium text-gray-500">/{{ isMonthly ? 'mo' : 'yr' }}</span>
           </div>
           <div v-if="!isMonthly" class="mt-2 inline-block bg-green-100 text-green-800 text-sm font-semibold py-1 px-3 rounded-full">
