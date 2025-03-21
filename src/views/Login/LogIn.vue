@@ -148,8 +148,6 @@ const handleSubmit = async () => {
   if (isValidEmail) {
     try {
       isLoading.value = true;
-      console.log("Logging in...");
-      console.log("API URL:", api.defaults.baseURL);
       const response = await api.post('login', {
         email: email.value,
         password: password.value

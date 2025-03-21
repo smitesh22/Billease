@@ -26,7 +26,6 @@ export function useGoogleAuth() {
             if (!event.origin.includes(api.defaults.baseURL as string)) return;
 
             const { token, user } = event.data || {};
-            console.log(user);
             if (token) {
                 localStorage.setItem("authToken", token);
                 userStore.setAuthToken(token);

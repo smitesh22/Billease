@@ -86,7 +86,6 @@ onMounted(() => {
     if (window.adsbygoogle && Array.isArray(window.adsbygoogle)) {
       [adSlotLeft.value, adSlotRight.value].forEach((ad) => {
         if (ad) {
-          console.log("Loading Google Ad in:", ad);
           window.adsbygoogle.push({});
         }
       });
