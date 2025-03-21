@@ -173,7 +173,6 @@ const closeModal = () => {
 };
 
 const handleSubmit = async () => {
-  console.log("User isAuthenticated:", user.isAuthenticated);
   isLoading.value = true;
   if (user.isAuthenticated) {
     await openModal();
@@ -195,7 +194,6 @@ const handlePayment = async () => {
       console.error("Payment failed:", error.message);
     } else {
       console.log("Subscription succeeded!");
-      console.log("Payment intent:", paymentIntent);
       await api.post("verify-payment", {
         userId: user.getUser.id,
         subscriptionType: isMonthly.value ? "monthly" : "yearly",
